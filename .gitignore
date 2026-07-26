@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Distribution / packaging
+*.tar.gz
+*.whl
+
+# PyInstaller
+*.spec
+
+# User journal data — never commit your actual journal
+journal.db
+journal.db-wal
+journal.db-shm
+*.db
+
+# API keys — never commit
+.env.local
+secrets.toml
+
+# Speculae local data dirs (for dev)
+speculae_data/
+speculae_config/
+
+# Tauri / Rust build artifacts
+desktop/target/
+desktop/binaries/
+desktop/gen/
+
+# Cargo lock is committed for applications (binary crates)
+# desktop/Cargo.lock is intentionally tracked

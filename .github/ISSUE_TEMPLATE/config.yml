@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/0x923041-dotcom/Speculae/tree/main/docs
+    about: User guide, API reference, developer guide, and more
+  - name: Discussions
+    url: https://github.com/0x923041-dotcom/Speculae/discussions
+    about: Questions, ideas, and general conversation

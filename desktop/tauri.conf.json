@@ -1,0 +1,79 @@
+{
+  "productName": "Speculae Journal",
+  "version": "0.1.0",
+  "identifier": "app.speculae.desktop",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "http://127.0.0.1:7730",
+    "beforeBuildCommand": "",
+    "frontendDist": "http://127.0.0.1:7730"
+  },
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Speculae",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Speculae",
+    "copyright": "Copyright © 2026 Speculae contributors. MIT License.",
+    "homepage": "https://github.com/0x923041-dotcom/Speculae",
+    "license": "MIT",
+    "shortDescription": "A local-first journal for humans and agents.",
+    "longDescription": "Speculae is a private, offline-first journaling app. No cloud, no accounts, no telemetry. Write freely. Track your mood and energy. Let patterns surface over time. Designed for humans and AI agents alike.",
+    "icon": [
+      "icons/16x16.png",
+      "icons/32x32.png",
+      "icons/48x48.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/256x256.png",
+      "icons/512x512.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/speculae-journal"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "headerImage": "./nsis/header.bmp",
+        "sidebarImage": "./nsis/sidebar.bmp",
+        "installerIcon": "./icons/icon.ico",
+        "installMode": "currentUser",
+        "startMenuFolder": "Speculae",
+        "compression": "lzma",
+        "languages": ["English"],
+        "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": false
+    }
+  }
+}

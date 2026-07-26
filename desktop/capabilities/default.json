@@ -1,0 +1,1 @@
+{ "$schema": "../gen/schemas/desktop-schema.json", "identifier": "default", "description": "Default capabilities for Speculae desktop", "windows": ["main"], "permissions": [ "core:default", { "identifier": "shell:allow-execute", "allow": [ { "name": "speculae-web", "sidecar": true } ] } ] }

@@ -1,0 +1,21 @@
+[package]
+name = "speculae-desktop"
+version = "0.1.0"
+edition = "2021"
+description = "Speculae desktop wrapper — launches the local Flask server as a sidecar and opens it in a native webview"
+license = "MIT"
+rust-version = "1.78"
+
+# See https://tauri.app/develop/sidecar/ for sidecar docs.
+# The sidecar binary (speculae-web.exe compiled by PyInstaller) must be placed at:
+#   desktop/binaries/speculae-web-x86_64-pc-windows-msvc.exe
+# before running `cargo tauri build`.
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.5", features = ["rustls-tls"] }
+tauri-plugin-shell = "2.3.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

@@ -1,0 +1,1144 @@
+openapi: "3.1.0"
+
+info:
+  title: Speculae API
+  version: "0.1.0"
+  description: |
+    Local-first journaling REST API. Binds exclusively to 127.0.0.1:7730.
+    All data stays on your machine.
+  license:
+    name: MIT
+    url: https://github.com/0x923041-dotcom/Speculae/blob/main/LICENSE
+
+servers:
+  - url: http://127.0.0.1:7730
+    description: Local development server
+
+tags:
+  - name: entries
+    description: Journal entries CRUD and search
+  - name: images
+    description: Image attachments on entries
+  - name: calendar
+    description: Mood heatmap data
+  - name: patterns
+    description: Detected emotional patterns
+  - name: insights
+    description: Weekly mirror report
+  - name: stats
+    description: Usage statistics
+  - name: config
+    description: Application configuration
+  - name: export-import
+    description: Data portability
+  - name: agents
+    description: Agent-specific journal endpoints
+  - name: wellness
+    description: Breathing exercises, meditation, journaling prompts
+
+
+components:
+  schemas:
+    Entry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Auto-generated UUID
+        date:
+          type: string
+          format: date
+          example: "2026-07-21"
+        content:
+          type: string
+          example: "Had a good day. Walked along the sea wall."
+        mood:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+        energy:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["outdoors", "solitude"]
+        starred:
+          type: boolean
+          default: false
+        agent_id:
+          type: string
+          nullable: true
+          description: Agent identifier, null for human entries
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - date
+        - content
+        - tags
+        - starred
+
+    EntryInput:
+      type: object
+      properties:
+        content:
+          type: string
+        mood:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+        energy:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+        tags:
+          type: array
+          items:
+            type: string
+        starred:
+          type: boolean
+        agent_id:
+          type: string
+          nullable: true
+        id:
+          type: string
+          description: If provided, update this entry instead of creating a new one
+
+    Image:
+      type: object
+      properties:
+        id:
+          type: string
+        entry_id:
+          type: string
+        filename:
+          type: string
+        mime_type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - entry_id
+        - filename
+        - mime_type
+
+    Pattern:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [arc, trigger, cycle, blindspot, dow]
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [info, notable, significant]
+        emoji:
+          type: string
+        entry_date_from:
+          type: string
+          format: date
+          nullable: true
+        entry_date_to:
+          type: string
+          format: date
+          nullable: true
+        data:
+          type: object
+
+    Insight:
+      type: object
+      properties:
+        id:
+          type: string
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        content:
+          type: string
+        type:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+
+    Stats:
+      type: object
+      properties:
+        total_entries:
+          type: integer
+        earliest_date:
+          type: string
+          format: date
+          nullable: true
+        latest_date:
+          type: string
+          format: date
+          nullable: true
+        avg_mood_30d:
+          type: number
+          nullable: true
+        avg_energy_30d:
+          type: number
+          nullable: true
+        entries_30d:
+          type: integer
+
+    BreathingExercise:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        pattern:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+                enum: [Inhale, Hold, Exhale]
+              duration:
+                type: integer
+                description: Duration in seconds
+        cycles:
+          type: integer
+        total_seconds:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+
+paths:
+
+  # ── Entries ──────────────────────────────────────────────────────────────
+
+  /api/entries:
+    get:
+      summary: List entries
+      tags: [entries]
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 90
+          description: How many days back to fetch
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Full-text search query (triggers FTS5 search, ignores other filters)
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag (post-query)
+        - name: mood
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+          description: Filter by exact mood score (post-query)
+        - name: starred
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+          description: Filter to starred entries only
+        - name: agent
+          in: query
+          schema:
+            type: string
+          description: Filter by agent_id (empty string = human entries)
+      responses:
+        "200":
+          description: List of entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+
+  /api/entries/{date}:
+    get:
+      summary: Get all entries for a date
+      tags: [entries]
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Entries for that date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+        "400":
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      summary: Create or update an entry for a date
+      description: |
+        Creates a new entry. If `id` is provided in the body and matches an existing entry,
+        that entry is updated instead.
+      tags: [entries]
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryInput"
+      responses:
+        "200":
+          description: Saved entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "400":
+          description: Invalid date format
+
+  /api/entries/by-id/{entry_id}:
+    get:
+      summary: Get a single entry by ID
+      tags: [entries]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Entry not found
+
+  /api/entries/{entry_id}:
+    put:
+      summary: Update an entry by ID
+      tags: [entries]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Fields to update (only provided fields are changed)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                mood:
+                  type: integer
+                  nullable: true
+                energy:
+                  type: integer
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                starred:
+                  type: boolean
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Entry not found
+
+    delete:
+      summary: Delete an entry by ID
+      tags: [entries]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+
+
+  # ── Images ───────────────────────────────────────────────────────────────
+
+  /api/entries/{entry_id}/images:
+    get:
+      summary: List images attached to an entry
+      tags: [images]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of image metadata (no binary data)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Image"
+
+    post:
+      summary: Upload an image to an entry
+      tags: [images]
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: |
+          Either multipart/form-data with a `file` field, or JSON with base64-encoded data.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: string
+                  format: byte
+                  description: Base64-encoded image data
+                filename:
+                  type: string
+                  default: image.png
+                mime_type:
+                  type: string
+                  default: image/png
+      responses:
+        "200":
+          description: Uploaded image metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Image"
+        "400":
+          description: No image data or invalid base64
+        "404":
+          description: Entry not found
+
+  /api/images/{image_id}:
+    get:
+      summary: Serve an image by ID
+      tags: [images]
+      parameters:
+        - name: image_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Raw image bytes
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Image not found
+
+    delete:
+      summary: Delete an image by ID
+      tags: [images]
+      parameters:
+        - name: image_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+
+  # ── Calendar ─────────────────────────────────────────────────────────────
+
+  /api/calendar:
+    get:
+      summary: Mood heatmap data
+      tags: [calendar]
+      parameters:
+        - name: months
+          in: query
+          schema:
+            type: integer
+            default: 4
+          description: How many months of history to return
+      responses:
+        "200":
+          description: |
+            Object keyed by ISO date. Each value has mood, energy, word count, tags, entry count.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    mood:
+                      type: integer
+                      nullable: true
+                    energy:
+                      type: integer
+                      nullable: true
+                    has_content:
+                      type: boolean
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                    words:
+                      type: integer
+                    count:
+                      type: integer
+
+  # ── Patterns & Insights ───────────────────────────────────────────────────
+
+  /api/patterns:
+    get:
+      summary: Get detected emotional patterns
+      tags: [patterns]
+      parameters:
+        - name: refresh
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+            default: "false"
+          description: Force re-detection even if cache is populated
+      responses:
+        "200":
+          description: List of patterns (empty if fewer than min_entries_for_patterns)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pattern"
+
+  /api/insights:
+    get:
+      summary: Get the weekly mirror report
+      tags: [insights]
+      parameters:
+        - name: refresh
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+            default: "false"
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        "200":
+          description: Insight report, or null if no data
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Insight"
+                  - type: "null"
+
+  # ── Stats ─────────────────────────────────────────────────────────────────
+
+  /api/stats:
+    get:
+      summary: Usage statistics
+      tags: [stats]
+      parameters:
+        - name: agent
+          in: query
+          schema:
+            type: string
+          description: If provided, statistics are scoped to that agent_id
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
+  # ── Config ────────────────────────────────────────────────────────────────
+
+  /api/config:
+    get:
+      summary: Get AI configuration
+      tags: [config]
+      responses:
+        "200":
+          description: Current AI configuration (keys are masked)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ai:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      provider:
+                        type: string
+                      model:
+                        type: string
+                      base_url:
+                        type: string
+                      has_openai_key:
+                        type: boolean
+                      has_anthropic_key:
+                        type: boolean
+
+    put:
+      summary: Update AI configuration
+      tags: [config]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ai:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    provider:
+                      type: string
+                      enum: [openai, anthropic, gemini, custom]
+                    model:
+                      type: string
+                    base_url:
+                      type: string
+                    openai_api_key:
+                      type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
+
+  # ── Export / Import ───────────────────────────────────────────────────────
+
+  /api/export:
+    get:
+      summary: Export entries
+      tags: [export-import]
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, html, markdown]
+            default: json
+        - name: agent
+          in: query
+          schema:
+            type: string
+          description: If provided, export only entries by this agent
+      responses:
+        "200":
+          description: Exported data in requested format
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+            text/html:
+              schema:
+                type: string
+            text/markdown:
+              schema:
+                type: string
+
+  /api/import:
+    post:
+      summary: Import entries from JSON array
+      tags: [export-import]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required: [date]
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  content:
+                    type: string
+                  mood:
+                    type: integer
+                    nullable: true
+                  energy:
+                    type: integer
+                    nullable: true
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                  starred:
+                    type: boolean
+                  agent_id:
+                    type: string
+                    nullable: true
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: integer
+        "400":
+          description: Body is not a JSON array
+
+  # ── Agent API ─────────────────────────────────────────────────────────────
+
+  /api/agents:
+    get:
+      summary: List all agents with entries
+      tags: [agents]
+      responses:
+        "200":
+          description: List of agent objects with id, name, and entry count
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    entry_count:
+                      type: integer
+
+  /api/agents/{agent_id}/entries:
+    get:
+      summary: List entries for an agent
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: until
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Agent's entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Entry"
+
+    post:
+      summary: Write an entry as an agent
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  description: Defaults to today if not provided
+                content:
+                  type: string
+                mood:
+                  type: integer
+                  nullable: true
+                energy:
+                  type: integer
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                starred:
+                  type: boolean
+      responses:
+        "200":
+          description: Saved entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+
+  /api/agents/{agent_id}/entries/{entry_id}:
+    get:
+      summary: Get a single agent entry
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Entry not found or belongs to a different agent
+
+    put:
+      summary: Update an agent entry
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                mood:
+                  type: integer
+                  nullable: true
+                energy:
+                  type: integer
+                  nullable: true
+                tags:
+                  type: array
+                  items:
+                    type: string
+                starred:
+                  type: boolean
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entry"
+        "404":
+          description: Not found
+
+    delete:
+      summary: Delete an agent entry
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+        "404":
+          description: Not found
+
+  /api/agents/{agent_id}/stats:
+    get:
+      summary: Statistics for an agent
+      tags: [agents]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_entries:
+                    type: integer
+                  earliest_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  latest_date:
+                    type: string
+                    format: date
+                    nullable: true
+                  avg_mood:
+                    type: number
+                    nullable: true
+                  avg_energy:
+                    type: number
+                    nullable: true
+                  top_tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:
+                          type: string
+                        count:
+                          type: integer
+
+  # ── Wellness ──────────────────────────────────────────────────────────────
+
+  /api/wellness/breathing:
+    get:
+      summary: List all breathing exercises
+      tags: [wellness]
+      responses:
+        "200":
+          description: Map of exercise slug to summary (no pattern detail)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    total_seconds:
+                      type: integer
+
+  /api/wellness/breathing/{name}:
+    get:
+      summary: Get a breathing exercise with full pattern
+      tags: [wellness]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [box, 4-7-8, coherent, physiological-sigh]
+      responses:
+        "200":
+          description: Full exercise detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreathingExercise"
+        "404":
+          description: Exercise not found
+
+  /api/wellness/prompt:
+    get:
+      summary: Get a random journaling prompt
+      tags: [wellness]
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [check-in, gratitude, reflection, body, connection, growth]
+          description: If provided, return a prompt from this category
+      responses:
+        "200":
+          description: A journaling prompt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prompt:
+                    type: string
+                  category:
+                    type: string
+
+  /api/wellness/prompt/daily:
+    get:
+      summary: Get today's deterministic daily prompt
+      tags: [wellness]
+      responses:
+        "200":
+          description: Today's prompt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prompt:
+                    type: string
+                  category:
+                    type: string
+                  date:
+                    type: string
+                    format: date
+
+  /api/wellness/meditation/presets:
+    get:
+      summary: Get meditation duration presets
+      tags: [wellness]
+      responses:
+        "200":
+          description: List of duration presets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    minutes:
+                      type: integer
+                    label:
+                      type: string

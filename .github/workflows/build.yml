@@ -1,0 +1,98 @@
+name: build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Python / Flask server ──────────────────────────────────────────
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install speculae + build deps
+        run: pip install -e ".[web,ai]" pyinstaller
+
+      - name: Build speculae-journal.exe (PyInstaller sidecar)
+        run: python scripts/build_exe.py
+
+      # ── Tauri / Rust desktop wrapper ───────────────────────────────────
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            desktop/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('desktop/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Copy sidecar binary into Tauri binaries dir
+        run: |
+          New-Item -ItemType Directory -Force -Path desktop\binaries | Out-Null
+          Copy-Item dist\speculae-journal.exe desktop\binaries\speculae-journal-x86_64-pc-windows-msvc.exe
+        shell: pwsh
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
+      - name: Build Tauri desktop app (NSIS installer)
+        run: cargo tauri build
+        working-directory: desktop
+
+      - name: Flatten installer for upload
+        run: |
+          Copy-Item "desktop\target\release\bundle\nsis\Speculae Journal_*.exe" -Destination "Speculae-Desktop-Installer.exe"
+        shell: pwsh
+
+      # ── Artifacts ──────────────────────────────────────────────────────
+
+      - name: Upload speculae-journal.exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: speculae-journal-windows
+          path: dist/speculae-journal.exe
+
+      - name: Upload speculae-desktop installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: speculae-desktop-windows
+          path: Speculae-Desktop-Installer.exe
+
+  release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download speculae-journal artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: speculae-journal-windows
+
+      - name: Download speculae-desktop artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: speculae-desktop-windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            speculae-journal.exe
+            Speculae-Desktop-Installer.exe
+          generate_release_notes: true

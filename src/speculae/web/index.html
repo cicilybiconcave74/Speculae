@@ -1,0 +1,4289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  /* Restore theme and font scale before first paint to prevent flash */
+  const t = localStorage.getItem('speculae-theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+  const fs = localStorage.getItem('speculae-font-scale');
+  if (fs) document.documentElement.style.fontSize = fs + 'px';
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>speculae — web console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --paper: #f4ede0;
+    --paper-deep: #ebe2d1;
+    --paper-shadow: #ddd2bd;
+    --ink: #1f1812;
+    --ink-soft: #4a3f33;
+    --ink-muted: #8a7d6a;
+    --oxblood: #7a2e2e;
+    --oxblood-soft: #9c4444;
+    --ochre: #b8884a;
+    --ochre-soft: #d4a868;
+    --moss: #4a5d3a;
+    --rule: #d4c8b0;
+    --rule-soft: #e0d6c0;
+    /* derived backgrounds */
+    --sidebar-bg: rgba(235, 226, 209, 0.4);
+    --hover-tint: rgba(244, 237, 224, 0.6);
+    --active-tint: rgba(244, 237, 224, 0.8);
+    --bar-tint: rgba(244, 237, 224, 0.95);
+    --surface-tint: rgba(244, 237, 224, 0.5);
+    --drop-tint: rgba(244, 237, 224, 0.3);
+    --dim-overlay: rgba(31, 24, 18, 0.6);
+    --deep-overlay: rgba(31, 24, 18, 0.85);
+    --shadow-sm: rgba(31, 24, 18, 0.12);
+    --shadow-md: rgba(31, 24, 18, 0.2);
+    --shadow-lg: rgba(31, 24, 18, 0.25);
+    --delete-bg: rgba(31, 24, 18, 0.7);
+    --cal-empty-border: #d4c8b0;
+    --cal-1: #d4c8b0;
+    --cal-2: #c4a878;
+    --cal-3: #b8884a;
+    --cal-4: #a8742e;
+    --cal-5: #7a2e2e;
+  }
+
+  [data-theme="dark"] {
+    --paper: #1a1612;
+    --paper-deep: #231f1a;
+    --paper-shadow: #2d2720;
+    --ink: #e8dfd0;
+    --ink-soft: #c4b8a4;
+    --ink-muted: #7a6e5c;
+    --oxblood: #c45454;
+    --oxblood-soft: #d47070;
+    --ochre: #d4a868;
+    --ochre-soft: #e0c088;
+    --moss: #6a8a52;
+    --rule: #3a3228;
+    --rule-soft: #2d2720;
+    /* derived backgrounds */
+    --sidebar-bg: rgba(26, 22, 18, 0.6);
+    --hover-tint: rgba(35, 31, 26, 0.6);
+    --active-tint: rgba(35, 31, 26, 0.8);
+    --bar-tint: rgba(26, 22, 18, 0.95);
+    --surface-tint: rgba(35, 31, 26, 0.5);
+    --drop-tint: rgba(35, 31, 26, 0.3);
+    --dim-overlay: rgba(0, 0, 0, 0.6);
+    --deep-overlay: rgba(0, 0, 0, 0.85);
+    --shadow-sm: rgba(0, 0, 0, 0.2);
+    --shadow-md: rgba(0, 0, 0, 0.3);
+    --shadow-lg: rgba(0, 0, 0, 0.4);
+    --delete-bg: rgba(0, 0, 0, 0.7);
+    --cal-empty-border: var(--rule);
+    --cal-1: #3a3228;
+    --cal-2: #7a5a30;
+    --cal-3: #b8884a;
+    --cal-4: #d4a868;
+    --cal-5: #c45454;
+  }
+
+  /* ─── Aqua & Gold Theme ─── */
+  [data-theme="aqua"] {
+    --paper: #081024;
+    --paper-deep: #0e1a34;
+    --paper-shadow: #152648;
+    --ink: #e2f7f5;
+    --ink-soft: #9ed4cd;
+    --ink-muted: #4e8079;
+    --oxblood: #e57373;
+    --oxblood-soft: #ef9a9a;
+    --ochre: #d4af37;
+    --ochre-soft: #f3e5ab;
+    --moss: #4dd9c0;
+    --rule: #1b325c;
+    --rule-soft: #142749;
+    --sidebar-bg: rgba(8, 16, 36, 0.75);
+    --hover-tint: rgba(77, 217, 192, 0.1);
+    --active-tint: rgba(212, 175, 55, 0.15);
+    --bar-tint: rgba(8, 16, 36, 0.95);
+    --surface-tint: rgba(14, 26, 52, 0.6);
+    --drop-tint: rgba(14, 26, 52, 0.4);
+    --dim-overlay: rgba(4, 9, 18, 0.75);
+    --deep-overlay: rgba(4, 9, 18, 0.9);
+    --shadow-sm: rgba(0, 0, 0, 0.3);
+    --shadow-md: rgba(0, 0, 0, 0.4);
+    --shadow-lg: rgba(0, 0, 0, 0.5);
+    --delete-bg: rgba(8, 16, 36, 0.85);
+    --cal-empty-border: #1b325c;
+    --cal-1: #162a4e;
+    --cal-2: #1e4570;
+    --cal-3: #2d8c80;
+    --cal-4: #4dd9c0;
+    --cal-5: #d4af37;
+  }
+  [data-theme="aqua"] .nav-item.active { border-left-color: #d4af37; background: rgba(77, 217, 192, 0.08); }
+  [data-theme="aqua"] .selector-dot.active.mood { background: #4dd9c0; border-color: #4dd9c0; color: #081024; }
+  [data-theme="aqua"] .selector-dot.active.energy { background: #d4af37; border-color: #d4af37; color: #081024; }
+
+  /* ─── High Contrast Theme ─── */
+  [data-theme="high-contrast"] {
+    --paper: #000000;
+    --paper-deep: #0a0a0a;
+    --paper-shadow: #111111;
+    --ink: #ffffff;
+    --ink-soft: #f0f0f0;
+    --ink-muted: #cccccc;
+    --oxblood: #ff6666;
+    --oxblood-soft: #ff8888;
+    --ochre: #ffcc00;
+    --ochre-soft: #ffe066;
+    --moss: #66ff88;
+    --rule: #555555;
+    --rule-soft: #444444;
+    --sidebar-bg: rgba(0, 0, 0, 0.98);
+    --hover-tint: rgba(255, 255, 255, 0.12);
+    --active-tint: rgba(255, 255, 255, 0.2);
+    --bar-tint: rgba(0, 0, 0, 0.98);
+    --surface-tint: rgba(255, 255, 255, 0.06);
+    --drop-tint: rgba(255, 255, 255, 0.04);
+    --dim-overlay: rgba(0, 0, 0, 0.85);
+    --deep-overlay: rgba(0, 0, 0, 0.95);
+    --shadow-sm: rgba(255, 255, 255, 0.1);
+    --shadow-md: rgba(255, 255, 255, 0.15);
+    --shadow-lg: rgba(255, 255, 255, 0.2);
+    --delete-bg: rgba(0, 0, 0, 0.9);
+    --cal-empty-border: #555555;
+    --cal-1: #333333;
+    --cal-2: #996600;
+    --cal-3: #cc9900;
+    --cal-4: #ffcc00;
+    --cal-5: #ff6666;
+  }
+  /* High contrast: remove subtle textures and gradients */
+  [data-theme="high-contrast"] body::before,
+  [data-theme="high-contrast"] body::after { display: none; }
+  [data-theme="high-contrast"] .nav-item.active { border-left-color: #ffcc00; }
+  [data-theme="high-contrast"] .selector-dot.active.mood { background: #ff6666; border-color: #ff6666; }
+  [data-theme="high-contrast"] .selector-dot.active.energy { background: #ffcc00; border-color: #ffcc00; }
+
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html { scroll-behavior: smooth; }
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      radial-gradient(ellipse at 18% 22%, rgba(122, 46, 46, 0.04) 0%, transparent 45%),
+      radial-gradient(ellipse at 82% 78%, rgba(184, 136, 74, 0.05) 0%, transparent 50%);
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 2; opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.09 0 0 0 0 0.07 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+    transition: opacity 0.3s ease;
+  }
+  [data-theme="dark"] body::after { opacity: 0.15; }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+  .ink { color: var(--ink); }
+  .ink-soft { color: var(--ink-soft); }
+  .ink-muted { color: var(--ink-muted); }
+  .oxblood { color: var(--oxblood); }
+  .ochre { color: var(--ochre); }
+  .rule { border-color: var(--rule); }
+  .rule-soft { border-color: var(--rule-soft); }
+  ::selection { background: var(--oxblood); color: var(--paper); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 0; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+  /* App shell */
+  .app-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 768px) {
+    .app-grid { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--rule);
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(4px);
+    padding: 2rem 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 10;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 2px;
+    border-left: 2px solid transparent;
+    transition: all 0.2s ease, padding-left 0.2s ease;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .nav-item:hover { background: var(--hover-tint); color: var(--ink); padding-left: 1rem; }
+  .nav-item.active {
+    background: var(--active-tint);
+    border-left-color: var(--oxblood);
+    color: var(--ink);
+    font-weight: 500;
+    padding-left: 1rem;
+  }
+  .nav-item .shortcut { font-size: 10px; color: var(--ink-muted); opacity: 0.6; }
+
+  /* Views */
+  .view { display: none; opacity: 0; transform: translateY(8px); }
+  .view.active { display: block; animation: viewIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes viewIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Write surface */
+  .write-area {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 300;
+    font-size: 1.65rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    min-height: 50vh;
+    transition: opacity 0.2s;
+  }
+  .write-area::placeholder { color: var(--ink-muted); opacity: 0.5; font-style: italic; }
+
+  /* Mood/Energy selector */
+  .selector-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--ink-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .selector-dot:hover { transform: scale(1.2); border-color: var(--ink-soft); }
+  .selector-dot.active.mood { background: var(--oxblood); border-color: var(--oxblood); }
+  .selector-dot.active.energy { background: var(--ochre); border-color: var(--ochre); }
+
+  /* Tag input */
+  .tag-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    width: 100%;
+  }
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-right: 4px;
+  }
+  .tag-chip button { color: var(--ink-muted); font-size: 14px; line-height: 1; }
+  .tag-chip button:hover { color: var(--oxblood); }
+
+  /* Calendar Heatmap */
+  .cal-grid {
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column;
+    gap: 4px;
+  }
+  .cal-cell {
+    width: 16px; height: 16px;
+    border-radius: 2px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .cal-cell:hover { transform: scale(1.4); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 5; position: relative; }
+  .cal-cell.today { outline: 2px solid var(--oxblood); outline-offset: 1px; }
+
+  /* Specimen card */
+  .specimen-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 1.5rem 1.75rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .specimen-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px var(--shadow-sm);
+  }
+
+  /* Insight letter drop cap */
+  .dropcap::first-letter {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.82;
+    margin: 0.08em 0.1em 0 -0.04em;
+    color: var(--oxblood);
+    font-style: italic;
+  }
+
+  /* Saved indicator */
+  .saved-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--moss);
+    display: inline-block;
+    margin-right: 6px;
+    box-shadow: 0 0 0 0 rgba(74, 93, 58, 0.4);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74, 93, 58, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(74, 93, 58, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 93, 58, 0); }
+  }
+
+  /* Settings overlay */
+  .overlay {
+    position: fixed; inset: 0; background: var(--dim-overlay); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .overlay.show { opacity: 1; pointer-events: all; }
+  .overlay-card {
+    background: var(--paper); border: 1px solid var(--rule); max-width: 480px; width: 90%;
+    padding: 2rem; box-shadow: 0 20px 40px var(--shadow-lg);
+  }
+  .overlay-card h2 { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 1.5rem; }
+  .overlay-card label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px; }
+  .overlay-card input, .overlay-card select {
+    width: 100%; padding: 8px 10px; background: var(--paper); border: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-soft);
+    outline: none; margin-bottom: 1rem;
+  }
+  .overlay-card input:focus, .overlay-card select:focus { border-color: var(--oxblood-soft); }
+  .overlay-card .field-group { margin-bottom: 0.5rem; }
+  .overlay-card .toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .overlay-card .toggle { position: relative; width: 36px; height: 20px; cursor: pointer; }
+  .overlay-card .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .overlay-card .toggle .slider {
+    position: absolute; inset: 0; background: var(--rule); border-radius: 999px;
+    transition: background 0.2s;
+  }
+  .overlay-card .toggle .slider::before {
+    content: ''; position: absolute; left: 2px; bottom: 2px; width: 16px; height: 16px;
+    background: var(--paper); border-radius: 50%; transition: transform 0.2s;
+  }
+  .overlay-card .toggle input:checked + .slider { background: var(--moss); }
+  .overlay-card .toggle input:checked + .slider::before { transform: translateX(16px); }
+  .overlay-card .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.5rem; }
+  .overlay-card .btn-row button {
+    padding: 8px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    border: 1px solid var(--rule); cursor: pointer; background: var(--paper); color: var(--ink-soft);
+  }
+  .overlay-card .btn-row button:hover { background: var(--paper-deep); }
+  .overlay-card .btn-row button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* Toast notification */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(120%);
+    background: var(--ink); color: var(--paper); padding: 0.75rem 1.5rem;
+    border-radius: 6px; font-family: 'Fraunces', serif; font-size: 0.95rem;
+    opacity: 0; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 8px 24px var(--shadow-md);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast a { color: var(--ochre); text-decoration: underline; cursor: pointer; pointer-events: all; }
+  .toast a:hover { color: var(--ochre-soft); }
+  .toast-close {
+    background: none; border: none; color: var(--ink-muted);
+    pointer-events: all; cursor: pointer; padding: 0 0 0 12px;
+    font-size: 1.1rem; line-height: 1; opacity: 0.5;
+  }
+  .toast-close:hover { opacity: 1; color: var(--ochre); }
+  .key-input-wrap { display: flex; border: 1px solid var(--rule); }
+  .key-input-wrap input { border: none; margin-bottom: 0; flex: 1; }
+  .key-input-wrap input:focus { border-color: transparent; }
+  .eye-btn {
+    background: none; border: none; border-left: 1px solid var(--rule);
+    cursor: pointer; padding: 0 10px; color: var(--ink-muted);
+    display: flex; align-items: center;
+  }
+  .eye-btn:hover { color: var(--ink-soft); }
+
+  kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65em;
+    padding: 2px 5px;
+    border: 1px solid var(--ink-muted);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    background: var(--paper-deep);
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+
+  /* List view & batch selection */
+  .entry-row {
+    display: grid;
+    grid-template-columns: 24px 30px 140px 1fr 80px;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+    transition: padding 0.25s ease, background-color 0.2s ease;
+    align-items: center;
+  }
+  .entry-row:hover { padding-left: 0.5rem; }
+  .entry-row:hover .preview { color: var(--ink); }
+  .entry-row.is-selected {
+    background: rgba(184, 136, 74, 0.08);
+    border-bottom-color: var(--ochre-soft, var(--rule));
+  }
+  .entry-chk {
+    accent-color: var(--ochre);
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+  }
+  .batch-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    background: var(--surface-high, var(--paper-deep));
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    animation: fadeIn 0.2s ease;
+  }
+  @media (max-width: 640px) {
+    .entry-row { grid-template-columns: 24px 1fr; gap: 0.5rem; }
+  }
+
+  /* Mobile top bar */
+  .mobile-bar { display: none; }
+  @media (max-width: 768px) {
+    .mobile-bar {
+      display: flex;
+      position: sticky;
+      top: 0;
+      background: var(--bar-tint);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--rule);
+      z-index: 20;
+      padding: 1rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  /* ─── Markdown Editor ─── */
+  .md-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 6px 8px;
+    border: 1px solid var(--rule-soft);
+    border-bottom: none;
+    background: var(--paper-deep);
+  }
+  .md-toolbar button {
+    background: none;
+    border: 1px solid transparent;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+  }
+  .md-toolbar button:hover { color: var(--ink); border-color: var(--rule); }
+  .md-toolbar .sep { width: 1px; background: var(--rule); margin: 2px 4px; }
+  .md-toolbar .mode-toggle {
+    margin-left: auto;
+    display: flex;
+    gap: 0;
+  }
+  .md-toolbar .mode-toggle button {
+    border: 1px solid var(--rule);
+    border-radius: 0;
+  }
+  .md-toolbar .mode-toggle button.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .md-split {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid var(--rule-soft);
+    min-height: 300px;
+  }
+  .md-split.mode-split {
+    grid-template-columns: 1fr 1fr;
+  }
+  .md-split.mode-preview {
+    grid-template-columns: 1fr;
+  }
+  .md-editor-pane {
+    display: block;
+  }
+  .md-split.mode-preview .md-editor-pane {
+    display: none;
+  }
+  .md-preview-pane {
+    display: none;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+    max-height: 60vh;
+    border-left: 1px solid var(--rule-soft);
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .md-split.mode-split .md-preview-pane {
+    display: block;
+  }
+  .md-split.mode-preview .md-preview-pane {
+    display: block;
+    border-left: none;
+  }
+
+  /* Markdown preview styles */
+  .md-preview-pane h1 { font-size: 1.8rem; font-weight: 400; margin: 0.8em 0 0.4em; color: var(--ink); }
+  .md-preview-pane h2 { font-size: 1.4rem; font-weight: 400; margin: 0.8em 0 0.4em; color: var(--ink); }
+  .md-preview-pane h3 { font-size: 1.15rem; font-weight: 500; margin: 0.8em 0 0.4em; color: var(--ink); }
+  .md-preview-pane p { margin: 0.6em 0; }
+  .md-preview-pane strong { font-weight: 600; color: var(--ink); }
+  .md-preview-pane em { font-style: italic; }
+  .md-preview-pane ul, .md-preview-pane ol { margin: 0.5em 0; padding-left: 1.5em; }
+  .md-preview-pane li { margin: 0.2em 0; }
+  .md-preview-pane code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--paper-deep);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--rule-soft);
+  }
+  .md-preview-pane pre {
+    background: var(--ink);
+    color: var(--paper-deep);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.8em 0;
+  }
+  .md-preview-pane pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+  .md-preview-pane blockquote {
+    border-left: 3px solid var(--oxblood);
+    margin: 0.8em 0;
+    padding: 0.3em 1em;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+  .md-preview-pane a { color: var(--ochre); text-decoration: underline; }
+  .md-preview-pane hr { border: none; border-top: 1px solid var(--rule); margin: 1.5em 0; }
+  .md-preview-pane ul.task-list { list-style: none; padding-left: 0; }
+  .md-preview-pane ul.task-list li { display: flex; align-items: center; gap: 6px; }
+  .md-preview-pane ul.task-list li input[type="checkbox"] { accent-color: var(--oxblood); }
+
+  /* ─── Image Attachments ─── */
+  .drop-zone {
+    border: 2px dashed var(--rule);
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--drop-tint);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--ochre);
+    background: rgba(184, 136, 74, 0.06);
+  }
+  .drop-zone p { color: var(--ink-muted); font-size: 13px; }
+
+  .thumb-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .thumb-wrap {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .thumb-wrap:hover { border-color: var(--ochre); }
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .thumb-wrap .thumb-delete {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--delete-bg);
+    color: var(--paper);
+    border: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .thumb-wrap:hover .thumb-delete { opacity: 1; }
+
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--deep-overlay);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .lightbox-overlay.show { opacity: 1; pointer-events: all; }
+  .lightbox-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--paper);
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .lightbox-close:hover { opacity: 1; }
+
+  /* ─── Star Toggle ─── */
+  .star-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--ink-muted);
+    padding: 2px 6px;
+    transition: color 0.2s, transform 0.2s;
+    line-height: 1;
+  }
+  .star-btn:hover { transform: scale(1.15); }
+  .star-btn.starred { color: var(--ochre); }
+
+  .star-icon-inline {
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+  .star-icon-inline.starred { color: var(--ochre); }
+
+  /* ─── Search Filters ─── */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    background: var(--surface-tint);
+    margin-bottom: 12px;
+  }
+  .search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .search-bar input::placeholder { color: var(--ink-muted); opacity: 0.6; }
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip:hover { border-color: var(--ink-muted); }
+  .filter-chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .filter-chip select {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .filter-chip select option { color: var(--ink); background: var(--paper); }
+  .filter-chip input {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: inherit;
+    width: 80px;
+  }
+  .filter-chip input::placeholder { color: var(--ink-muted); opacity: 0.6; }
+
+  /* ─── Wellness ─── */
+  .wellness-view {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  /* Breathing */
+  .breathe-circle-wrap {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 2rem auto;
+  }
+  .breathe-circle {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--ink-muted);
+    opacity: 0.3;
+  }
+  .breathe-circle.animating {
+    opacity: 1;
+    border-color: var(--ochre);
+    transition: transform var(--breathe-dur-in, 4s) ease-in-out, opacity 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  }
+  .breathe-circle.expand {
+    transform: scale(1.35);
+    border-color: var(--ochre);
+    box-shadow: 0 0 24px rgba(184, 136, 74, 0.3);
+  }
+  .breathe-circle.contract {
+    transform: scale(1);
+    border-color: var(--ink-muted);
+    box-shadow: none;
+  }
+  .breathe-circle.hold {
+    transform: scale(1.35);
+    border-color: var(--ochre-soft);
+    box-shadow: 0 0 16px rgba(184, 136, 74, 0.2);
+  }
+  .breathe-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .breathe-cycles {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 1rem;
+  }
+
+  /* Meditation */
+  .meditate-timer-wrap {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 2rem auto;
+  }
+  .meditate-timer-wrap svg {
+    transform: rotate(-90deg);
+  }
+  .meditate-timer-bg {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 3;
+  }
+  .meditate-timer-progress {
+    fill: none;
+    stroke: var(--ochre);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .meditate-timer-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    color: var(--ink);
+    font-weight: 300;
+  }
+  .duration-picker {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .duration-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 3px;
+  }
+  .duration-btn:hover { border-color: var(--ink-muted); }
+  .duration-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ambient-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    margin-top: 1rem;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .ambient-toggle.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* ─── Agent Selector ─── */
+  .agent-selector {
+    margin-bottom: 1.5rem;
+    padding: 8px 10px;
+    border: 1px solid var(--rule-soft);
+    background: var(--surface-tint);
+    border-radius: 4px;
+  }
+  .agent-selector label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+  }
+  .agent-selector select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .agent-selector select option { color: var(--ink); background: var(--paper); }
+  .agent-stats {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+  }
+
+  /* ─── Prompt Section ─── */
+  .prompt-section {
+    padding: 1.25rem;
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    background: var(--drop-tint);
+    margin-bottom: 2rem;
+  }
+  .prompt-text {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* ─── Wellness button style ─── */
+  .wellness-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 3px;
+  }
+  .wellness-btn:hover { border-color: var(--ink-muted); background: var(--paper-deep); }
+  .wellness-btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .wellness-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .exercise-picker {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ─── Focus Mode ─── */
+  body.focus-mode .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  body.focus-mode .app-grid {
+    grid-template-columns: 1fr;
+  }
+  body.focus-mode .write-view-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  body.focus-mode .bottom-toolbar {
+    opacity: 0.3;
+    transition: opacity 0.3s;
+  }
+  body.focus-mode .bottom-toolbar:hover {
+    opacity: 1;
+  }
+
+  /* ─── Reduced Motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ─── Focus Styles (keyboard navigation) ─── */
+  /* Remove default outline everywhere, replace with consistent custom outline */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid var(--ochre);
+    outline-offset: 2px;
+  }
+  /* Stronger contrast for high-contrast mode */
+  [data-theme="high-contrast"] :focus-visible {
+    outline: 3px solid #ffcc00;
+    outline-offset: 3px;
+  }
+  /* Nav items are divs — need explicit focus treatment */
+  .nav-item:focus-visible {
+    outline: 2px solid var(--ochre);
+    outline-offset: -2px;
+    background: var(--active-tint);
+  }
+  /* Skip-to-content link for screen readers */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    border-radius: 0 0 4px 4px;
+    text-decoration: none;
+    transition: top 0.1s;
+  }
+  .skip-link:focus { top: 0; }
+
+  /* ─── Font Scale ─── */
+  /* Base font-size on html element is what scales the rem-based layout.
+     We instead scale a --font-scale custom property applied to specific
+     text elements so the structural layout stays intact. */
+  .font-scale-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .font-scale-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .font-scale-btn:hover { background: var(--paper-deep); border-color: var(--ink-muted); }
+  .font-scale-btn:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; }
+  .font-scale-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  /* ─── Screen-reader-only utility ─── */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* ─── Dashboard Widgets ─── */
+  .widget-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .widget-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-sm);
+  }
+  .widget-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 768px) {
+    .widget-grid { grid-template-columns: 1fr; }
+  }
+  .widget-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.75rem;
+  }
+  .widget-value {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .widget-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 0.5rem;
+  }
+  .widget-mood-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .widget-quote {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .widget-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .widget-action-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .widget-action-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  /* ─── Day Timeline (multi-entry per day) ─── */
+  .day-timeline {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .timeline-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: timelineIn 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .timeline-divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .timeline-divider-stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ochre);
+    padding: 3px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--paper);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .timeline-entry-card {
+    padding: 1.5rem 0;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: timelineIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes timelineIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .timeline-entry-content {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 1rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .timeline-entry-content:hover {
+    border-color: var(--rule-soft);
+    background: var(--hover-tint);
+  }
+  .timeline-entry-content p { margin: 0 0 0.5em; }
+  .timeline-entry-content p:last-child { margin-bottom: 0; }
+  .timeline-entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding: 0 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-muted);
+  }
+  .timeline-edit-hint {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-muted);
+    opacity: 0;
+    transition: opacity 0.2s;
+    margin-left: auto;
+  }
+  .timeline-entry-content:hover + .timeline-entry-meta .timeline-edit-hint,
+  .timeline-entry-card:hover .timeline-edit-hint {
+    opacity: 1;
+  }
+  .timeline-mood-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .timeline-mood-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .timeline-entry-card.is-current .timeline-entry-content {
+    border-color: var(--oxblood-soft);
+    background: var(--active-tint);
+  }
+
+  /* ─── Onboarding overlay ─── */
+  #onboarding-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--paper);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  #onboarding-overlay.active { display: flex; animation: fadeInOverlay 0.9s ease forwards; }
+  #onboarding-overlay.fading { animation: fadeOutOverlay 0.6s ease forwards; }
+  @keyframes fadeInOverlay { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeOutOverlay { from { opacity: 1; } to { opacity: 0; } }
+  .onboarding-inner { text-align: center; max-width: 400px; padding: 2rem; }
+  .onboarding-wordmark { font-family: 'Fraunces', Georgia, serif; font-size: 2.5rem; font-weight: 300; letter-spacing: 0.04em; color: var(--ink); margin-bottom: 0.4rem; }
+  .onboarding-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 3rem; }
+  .onboarding-prompt { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 300; font-style: italic; color: var(--ink-soft); line-height: 1.75; margin-bottom: 0.6rem; }
+  .onboarding-caption { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--ink-muted); margin-bottom: 1.75rem; }
+  .onboarding-input { font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; font-weight: 300; color: var(--ink); background: transparent; border: none; border-bottom: 1px solid var(--rule); padding: 0.5rem 0; width: 220px; text-align: center; outline: none; transition: border-color 0.2s; display: block; margin: 0 auto 2rem; }
+  .onboarding-input:focus { border-bottom-color: var(--oxblood); }
+  .onboarding-begin { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 24px; border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .onboarding-begin:hover { background: var(--ink); color: var(--paper); }
+
+  /* ─── First-Light Whisper ─── */
+  #write-whisper { font-family: 'Fraunces', Georgia, serif; font-size: 0.875rem; font-weight: 300; font-style: italic; color: var(--ink-muted); padding: 0 0 1.25rem 0.25rem; opacity: 1; transition: opacity 0.7s ease; pointer-events: none; user-select: none; letter-spacing: 0.01em; }
+  #write-whisper.faded { opacity: 0; }
+  #write-whisper.hidden { display: none; }
+
+  /* ─── Agent Lens Badge ─── */
+  .lens-badge { display: inline-flex; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--oxblood); padding: 2px 8px; border: 1px solid rgba(184,136,74,0.35); border-radius: 999px; margin-top: 4px; opacity: 0; transform: translateY(3px); transition: opacity 0.3s, transform 0.3s; }
+  .lens-badge.visible { opacity: 1; transform: translateY(0); }
+  #write-context-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oxblood); margin-bottom: 4px; min-height: 14px; opacity: 0.8; }
+
+  /* ─── Constellation View ─── */
+  #view-constellation { background: #0a0806; min-height: 100vh; color: rgba(255,255,255,0.6); }
+  .constellation-canvas { width: 100%; height: calc(100vh - 130px); display: block; cursor: crosshair; }
+  .constellation-header { padding: 2rem 3rem 0.5rem; display: flex; align-items: baseline; justify-content: space-between; }
+  .constellation-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(184,136,74,0.55); }
+  .constellation-legend { display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0 3rem 0.75rem; }
+  .constellation-legend-item { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 0.06em; }
+  .constellation-dot-icon { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .constellation-tooltip { position: fixed; pointer-events: none; background: rgba(10,8,6,0.95); border: 1px solid rgba(184,136,74,0.25); padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.65); border-radius: 3px; opacity: 0; transition: opacity 0.15s; z-index: 999; max-width: 240px; line-height: 1.55; }
+  .constellation-tooltip.visible { opacity: 1; }
+  .constellation-empty { display: flex; align-items: center; justify-content: center; height: calc(100vh - 130px); font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 300; font-style: italic; color: rgba(184,136,74,0.22); text-align: center; line-height: 1.9; }
+</style>
+</head>
+<body class="overflow-x-hidden">
+
+<!-- Skip to main content — visible only on keyboard focus -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div class="app-grid" role="application" aria-label="Speculae journal application">
+
+  <!-- ─────────── SIDEBAR ─────────── -->
+  <aside class="sidebar" aria-label="Navigation sidebar">
+    <div class="mb-6">
+      <div class="serif text-2xl font-medium" aria-label="Speculae">speculae</div>
+      <div class="mono text-[10px] ink-muted tracking-widest uppercase mt-1" aria-hidden="true">journal</div>
+    </div>
+
+    <!-- Agent Selector -->
+    <div class="agent-selector" id="agent-selector-wrap">
+      <label for="agent-select">context</label>
+      <select id="agent-select" aria-label="Select journal context">
+        <option value="human" id="human-option">Human</option>
+      </select>
+    </div>
+
+
+
+    <div class="flex items-center gap-2 mb-6">
+      <button id="theme-toggle" class="mono text-[10px] px-2 py-1 border rule" style="cursor:pointer;" aria-label="Toggle colour theme" aria-haspopup="true">
+        <span id="theme-icon" aria-hidden="true">&#9728;</span> <span id="theme-label">light</span>
+      </button>
+      <button id="fullscreen-toggle" class="mono text-[10px] px-2 py-1 border rule" style="cursor:pointer;" aria-label="Toggle full screen">
+        <span id="fullscreen-icon" aria-hidden="true">⛶</span> <span id="fullscreen-label">full</span>
+      </button>
+    </div>
+
+    <nav aria-label="Main navigation">
+      <div class="nav-item active" data-view="dashboard" role="button" tabindex="0" aria-label="Home dashboard" aria-current="page">
+        <span>Home</span>
+      </div>
+      <div class="nav-item" data-view="write" role="button" tabindex="0" aria-label="Write journal entry">
+        <span>Write</span>
+      </div>
+      <div class="nav-item" data-view="read" role="button" tabindex="0" aria-label="Read past entries">
+        <span>Read</span>
+      </div>
+      <div class="nav-item" data-view="patterns" role="button" tabindex="0" aria-label="View emotional patterns">
+        <span>Patterns</span>
+      </div>
+      <div class="nav-item" data-view="calendar" role="button" tabindex="0" aria-label="View calendar heatmap">
+        <span>Calendar</span>
+      </div>
+      <div class="nav-item" data-view="insights" role="button" tabindex="0" aria-label="View weekly insights">
+        <span>Insights</span>
+      </div>
+
+      <div class="my-3 border-t rule-soft" role="separator"></div>
+
+      <div class="nav-item" data-view="breathe" role="button" tabindex="0" aria-label="Breathing exercises">
+        <span>Breathe</span>
+      </div>
+      <div class="nav-item" data-view="meditate" role="button" tabindex="0" aria-label="Meditation timer">
+        <span>Meditate</span>
+      </div>
+      <div class="nav-item" data-view="constellation" role="button" tabindex="0" aria-label="View entry constellation">
+        <span>✦ Constellation</span>
+      </div>
+    </nav>
+
+    <div class="mt-8 pt-6 border-t rule">
+      <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-3" aria-hidden="true">data</div>
+      <div class="text-sm ink-soft mb-2"><a href="#" class="hover:text-oxblood" aria-label="Export journal as JSON">Export JSON</a></div>
+      <div class="text-sm ink-soft mb-2"><a href="#" class="hover:text-oxblood" aria-label="Import journal from JSON file">Import</a></div>
+      <div class="text-sm ink-soft"><a href="#" class="hover:text-oxblood" aria-label="Open settings">Config</a></div>
+    </div>
+
+    <!-- Font Size Controls -->
+    <div class="mt-6 pt-4 border-t rule">
+      <div class="mono text-[9px] ink-muted tracking-widest uppercase mb-2" id="font-scale-label-id">text size</div>
+      <div class="font-scale-controls" role="group" aria-labelledby="font-scale-label-id">
+        <button class="font-scale-btn" id="font-scale-down" aria-label="Decrease text size" title="Decrease text size">A−</button>
+        <span class="font-scale-label" id="font-scale-display" aria-live="polite">100%</span>
+        <button class="font-scale-btn" id="font-scale-up" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button class="font-scale-btn" id="font-scale-reset" aria-label="Reset text size to default" title="Reset text size">⟳</button>
+      </div>
+    </div>
+
+    <div class="mt-auto pt-5 border-t rule mono text-[10px] ink-muted" aria-label="Application version">
+      <div>Speculae · offline mode</div>
+      <div class="mt-1">0 telemetry pings</div>
+    </div>
+  </aside>
+
+  <!-- ─────────── MAIN CONTENT ─────────── -->
+  <main class="relative z-3" id="main-content" aria-label="Main content">
+    
+    <!-- Mobile top bar -->
+    <div class="mobile-bar">
+      <div class="serif text-lg">speculae</div>
+      <select class="mono text-xs bg-transparent border rule p-2">
+        <option>Home</option>
+        <option>Write</option>
+        <option>Read</option>
+        <option>Patterns</option>
+        <option>Calendar</option>
+        <option>Insights</option>
+        <option>Breathe</option>
+        <option>Meditate</option>
+      </select>
+    </div>
+
+    <!-- ─────────── VIEW: DASHBOARD ─────────── -->
+    <section id="view-dashboard" class="view active px-6 md:px-16 py-12 md:py-20" aria-label="Dashboard" aria-live="polite">
+      <div class="max-w-5xl mx-auto">
+        <div class="mb-10">
+          <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2">§ dashboard</div>
+          <h1 class="serif text-4xl md:text-5xl" style="font-weight: 400;">Welcome back.</h1>
+        </div>
+
+        <div class="widget-grid">
+          <!-- Mood Widget -->
+          <div class="widget-card" id="widget-mood" role="region" aria-label="Today's mood">
+            <div class="widget-label" id="widget-mood-label">mood today</div>
+            <div class="widget-value text-5xl" id="widget-mood-value" aria-labelledby="widget-mood-label" aria-live="polite">—</div>
+            <div class="widget-desc" id="widget-mood-desc" aria-live="polite">Loading...</div>
+          </div>
+
+          <!-- Streak Widget -->
+          <div class="widget-card" id="widget-streak" role="region" aria-label="Writing streak">
+            <div class="widget-label" id="widget-streak-label">streak</div>
+            <div class="widget-value text-5xl" id="widget-streak-value" aria-labelledby="widget-streak-label" aria-live="polite">—</div>
+            <div class="widget-desc" id="widget-streak-desc" aria-live="polite">Loading...</div>
+          </div>
+
+          <!-- Word Count Widget -->
+          <div class="widget-card" id="widget-words" role="region" aria-label="Words written this week">
+            <div class="widget-label" id="widget-words-label">words this week</div>
+            <div class="widget-value text-5xl" id="widget-words-value" aria-labelledby="widget-words-label" aria-live="polite">—</div>
+            <div class="widget-desc" id="widget-words-desc" aria-live="polite">Loading...</div>
+          </div>
+
+          <!-- Quote Widget -->
+          <div class="widget-card" id="widget-quote" role="region" aria-label="Today's journaling prompt">
+            <div class="widget-label">journaling prompt</div>
+            <div class="widget-quote" id="widget-quote-text" aria-live="polite">Loading...</div>
+            <div class="widget-desc mt-3 flex items-center gap-3">
+              <span id="widget-quote-category" aria-label="Prompt category"></span>
+              <button class="mono text-[10px] px-2 py-1 border rule hover:bg-paper-deep" id="widget-quote-refresh" aria-label="Show a different journaling prompt">Give me another</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 pt-6 border-t rule-soft">
+          <div class="widget-label mb-3">quick actions</div>
+          <div class="widget-actions">
+            <button class="widget-action-btn" data-nav="write">Write today</button>
+            <button class="widget-action-btn" data-nav="breathe">Breathe</button>
+            <button class="widget-action-btn" data-nav="calendar">View calendar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: WRITE ─────────── -->
+    <section id="view-write" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Write journal entry">
+      <div class="max-w-3xl mx-auto">
+        
+        <div class="flex items-baseline justify-between mb-8">
+          <div>
+            <div id="write-context-label"></div>
+            <div class="mono text-xs ink-muted tracking-wider" id="write-date-label">sunday, 20 july 2026</div>
+            <div class="mono text-[10px] ink-muted mt-1" id="write-entry-count">0 entries</div>
+          </div>
+          <div class="text-right">
+            <div class="mono text-[10px] ink-muted">words</div>
+            <div class="mono text-sm ink" id="word-count">0</div>
+          </div>
+        </div>
+
+        <!-- New entry button -->
+        <div class="flex gap-2 mb-6">
+          <button class="mono text-xs px-3 py-2 border rule hover:bg-paper-deep" id="new-entry-btn">+ New entry</button>
+        </div>
+
+        <!-- Prompt Section -->
+        <div class="prompt-section" id="prompt-section">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="mono text-[9px] ink-muted tracking-widest uppercase mb-2">today's prompt</div>
+              <div class="prompt-text" id="prompt-text">What small thing caught your attention today?</div>
+            </div>
+            <button class="mono text-[10px] px-2 py-1 border rule hover:bg-paper-deep shrink-0" id="new-prompt-btn">Give me another</button>
+          </div>
+        </div>
+
+        <!-- Markdown Editor -->
+        <div class="md-toolbar" id="md-toolbar" role="toolbar" aria-label="Markdown formatting toolbar">
+          <button data-md="bold" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+          <button data-md="italic" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
+          <button data-md="heading" title="Heading" aria-label="Insert heading">H</button>
+          <div class="sep" role="separator" aria-hidden="true"></div>
+          <button data-md="list" title="List" aria-label="Insert bullet list">- List</button>
+          <button data-md="checklist" title="Task" aria-label="Insert task list">☑ Task</button>
+          <div class="sep" role="separator" aria-hidden="true"></div>
+          <button data-md="code" title="Code" aria-label="Insert code">&lt;/&gt;</button>
+          <button data-md="link" title="Link" aria-label="Insert link">Link</button>
+          <button data-md="quote" title="Quote" aria-label="Insert blockquote">"</button>
+          <div class="mode-toggle" role="group" aria-label="Editor display mode">
+            <button class="active" data-mode="edit" aria-pressed="true">Edit</button>
+            <button data-mode="split" aria-pressed="false">Split</button>
+            <button data-mode="preview" aria-pressed="false">Preview</button>
+          </div>
+        </div>
+        <div id="write-whisper" class="hidden" aria-hidden="true"></div>
+        <div class="md-split" id="md-split" role="group" aria-label="Journal editor">
+          <div class="md-editor-pane">
+            <textarea class="write-area" id="entry-text"
+              placeholder="What happened today?&#10;&#10;No pressure to fill anything. A blank page and a timestamp.&#10;&#10;Use **markdown** for formatting."
+              style="min-height: 300px;"
+              aria-label="Journal entry text. Markdown supported."
+              aria-multiline="true"></textarea>
+          </div>
+          <div class="md-preview-pane" id="md-preview" aria-label="Markdown preview" aria-live="polite"></div>
+        </div>
+
+        <!-- Image Attachments (visible when editing) -->
+        <div id="image-section" style="display:none;">
+          <div class="mt-6 pt-6 border-t rule">
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-3">images</div>
+            <div class="drop-zone" id="drop-zone">
+              <p>Drag &amp; drop images here, or click to browse</p>
+              <p class="mt-1 text-[11px]" style="opacity:0.5">Ctrl+V to paste from clipboard</p>
+              <input type="file" id="file-input" multiple accept="image/*" style="display:none;">
+            </div>
+            <div class="thumb-grid" id="thumb-grid"></div>
+          </div>
+        </div>
+
+        <!-- Bottom toolbar -->
+        <div class="mt-8 pt-8 border-t rule bottom-toolbar">
+          
+          <!-- Mood & Energy -->
+          <div class="flex flex-wrap gap-12 mb-8">
+            <div>
+              <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-3" id="mood-label">mood <span class="ml-2 ink-soft" id="mood-val" aria-live="polite">—</span></div>
+              <div class="flex gap-2" id="mood-selector" role="group" aria-labelledby="mood-label">
+                <div class="selector-dot mood" data-val="1" role="radio" tabindex="0" aria-label="Mood 1 — low" aria-checked="false"></div>
+                <div class="selector-dot mood" data-val="2" role="radio" tabindex="0" aria-label="Mood 2" aria-checked="false"></div>
+                <div class="selector-dot mood" data-val="3" role="radio" tabindex="0" aria-label="Mood 3 — neutral" aria-checked="false"></div>
+                <div class="selector-dot mood" data-val="4" role="radio" tabindex="0" aria-label="Mood 4" aria-checked="false"></div>
+                <div class="selector-dot mood" data-val="5" role="radio" tabindex="0" aria-label="Mood 5 — great" aria-checked="false"></div>
+              </div>
+            </div>
+            <div>
+              <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-3" id="energy-label">energy <span class="ml-2 ink-soft" id="energy-val" aria-live="polite">—</span></div>
+              <div class="flex gap-2" id="energy-selector" role="group" aria-labelledby="energy-label">
+                <div class="selector-dot energy" data-val="1" role="radio" tabindex="0" aria-label="Energy 1 — low" aria-checked="false"></div>
+                <div class="selector-dot energy" data-val="2" role="radio" tabindex="0" aria-label="Energy 2" aria-checked="false"></div>
+                <div class="selector-dot energy" data-val="3" role="radio" tabindex="0" aria-label="Energy 3 — neutral" aria-checked="false"></div>
+                <div class="selector-dot energy" data-val="4" role="radio" tabindex="0" aria-label="Energy 4" aria-checked="false"></div>
+                <div class="selector-dot energy" data-val="5" role="radio" tabindex="0" aria-label="Energy 5 — high" aria-checked="false"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="mb-8">
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-3" id="tags-label">tags</div>
+            <div id="tag-container" class="flex flex-wrap items-center gap-2 p-3 border rule-soft" style="background: var(--surface-tint);" role="group" aria-labelledby="tags-label">
+              <input type="text" class="tag-input flex-1" placeholder="add tag, press comma..." id="tag-input" style="min-width: 150px;" aria-label="Add tag, press comma or Enter to confirm">
+            </div>
+          </div>
+
+          <!-- Status & Shortcuts -->
+          <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t rule-soft">
+            <div class="flex items-center gap-6 mono text-[10px] ink-muted">
+              <span><span class="saved-dot" aria-hidden="true"></span><span id="save-status" aria-live="polite">ready</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="star-btn" id="star-btn" title="Star entry" aria-label="Star this entry" aria-pressed="false">☆</button>
+              <button class="mono text-xs px-3 py-2 border rule hover:bg-paper-deep" id="delete-entry-btn" style="display:none" aria-label="Delete this entry">Delete</button>
+              <button class="mono text-xs px-3 py-2 border rule hover:bg-paper-deep" id="focus-toggle" aria-label="Toggle focus mode" aria-pressed="false">Focus</button>
+              <button class="mono text-xs px-3 py-2 border rule hover:bg-paper-deep" id="save-btn" aria-label="Save entry (Ctrl+S)">Save</button>
+              <div class="mono text-[10px] ink-muted" aria-hidden="true">
+                <span><kbd>⌃</kbd><kbd>S</kbd></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: PATTERNS ─────────── -->
+    <section id="view-patterns" class="view px-6 md:px-16 py-12 md:py-20" style="background: var(--paper-deep);" aria-label="Emotional patterns" aria-live="polite">
+      <div class="max-w-5xl mx-auto">
+        
+        <div class="mb-12">
+          <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2">§ pattern layer</div>
+          <h1 class="serif text-4xl md:text-5xl" style="font-weight: 400;">What it learns to notice.</h1>
+          <p class="mt-4 text-lg ink-soft max-w-2xl">Refreshed on-demand. Never pushed to you. These are observations, not diagnoses — phrased as questions, never answers.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6" id="patterns-container" aria-live="polite" aria-label="Detected patterns">
+        </div>
+
+        <div class="mt-8 mono text-xs ink-muted flex items-center gap-2">
+          <span class="oxblood">$</span> speculae patterns --refresh
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: CALENDAR ─────────── -->
+    <section id="view-calendar" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Mood calendar heatmap">
+      <div class="max-w-5xl mx-auto">
+        <div class="mb-12 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2">§ calendar</div>
+            <h1 class="serif text-4xl md:text-5xl" style="font-weight: 400;" id="cal-header">May — July 2026</h1>
+          </div>
+          <div class="flex items-center gap-2 mono text-[10px] ink-muted">
+            <span>low</span>
+            <div class="flex gap-1">
+              <div class="cal-cell" style="background: var(--cal-1);"></div>
+              <div class="cal-cell" style="background: var(--cal-2);"></div>
+              <div class="cal-cell" style="background: var(--cal-3);"></div>
+              <div class="cal-cell" style="background: var(--cal-4);"></div>
+              <div class="cal-cell" style="background: var(--cal-5);"></div>
+            </div>
+            <span>high</span>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mb-8 mono text-[10px] ink-muted">
+          <div class="flex flex-col gap-1 justify-around h-[140px] py-1">
+            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+          </div>
+        <div id="heatmap-large" class="cal-grid flex-1" role="grid" aria-label="Mood heatmap. Click a day to open that entry."></div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 pt-8 border-t rule" id="cal-stats">
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-1">entries</div>
+            <div class="serif text-2xl" id="stat-entries">—</div>
+          </div>
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-1">mean mood</div>
+            <div class="serif text-2xl" id="stat-mood">—</div>
+          </div>
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-1">longest streak</div>
+            <div class="serif text-2xl" id="stat-streak">—</div>
+          </div>
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-1">dim day</div>
+            <div class="serif text-2xl oxblood" id="stat-dimday">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: READ ─────────── -->
+    <section id="view-read" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Read past journal entries">
+      <div class="max-w-3xl mx-auto">
+        <div class="mb-12">
+          <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2">§ read</div>
+          <h1 class="serif text-4xl md:text-5xl" style="font-weight: 400;">Last 14 days.</h1>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="search-bar" id="search-bar-wrap" role="search">
+          <span class="mono text-xs ink-muted" aria-hidden="true">⌕</span>
+          <input type="text" id="search-input" placeholder="Search entries..." aria-label="Search journal entries">
+        </div>
+        <div class="filter-chips" role="group" aria-label="Filter entries">
+          <div class="filter-chip" id="filter-tag-chip">
+            <label for="filter-tag" class="sr-only">Filter by tag</label>
+            <span aria-hidden="true">tag:</span>
+            <input type="text" id="filter-tag" placeholder="any" aria-label="Filter by tag">
+          </div>
+          <div class="filter-chip" id="filter-mood-chip">
+            <label for="filter-mood" class="sr-only">Filter by mood</label>
+            <span aria-hidden="true">mood:</span>
+            <select id="filter-mood" aria-label="Filter by mood">
+              <option value="">any</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="filter-chip" id="filter-starred-chip" role="button" tabindex="0" aria-pressed="false" aria-label="Filter starred entries">
+            <span id="filter-starred-label">☆ starred</span>
+          </div>
+          <div class="filter-chip" id="select-all-chip" role="button" tabindex="0" aria-label="Select all displayed entries">
+            <span id="select-all-label">☐ select all</span>
+          </div>
+        </div>
+
+        <!-- Batch Action Bar -->
+        <div id="batch-actions-bar" class="batch-actions-bar" style="display:none;" aria-label="Batch actions">
+          <div class="flex items-center gap-3">
+            <span class="mono text-xs ink-muted" id="batch-count">0 selected</span>
+            <button id="batch-clear-btn" class="mono text-xs ink-muted hover:ink-soft underline cursor-pointer">Deselect</button>
+          </div>
+          <button id="batch-delete-btn" class="mono text-xs px-3 py-1.5 border border-rose-500/40 text-rose-400 hover:bg-rose-500/20 rounded transition-colors cursor-pointer font-medium">Delete selected (<span id="batch-delete-count">0</span>)</button>
+        </div>
+
+        <div id="entry-list" aria-live="polite" aria-label="Journal entry list">
+          <div class="entry-row" data-date="">
+            <div></div>
+            <div class="mono text-xs ink-muted loading">Loading...</div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex justify-between items-center mono text-xs ink-muted">
+          <span id="read-count">—</span>
+          <button class="ul-link" id="load-more-btn">Load more ↓</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: INSIGHTS ─────────── -->
+    <section id="view-insights" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Weekly mirror report">
+      <div class="max-w-3xl mx-auto">
+        
+        <div class="mb-12 flex flex-wrap justify-between items-end gap-4">
+          <div>
+            <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2">§ mirror report</div>
+            <h1 class="serif text-4xl md:text-5xl" style="font-weight: 400;">Week <span id="insight-week">—</span>.</h1>
+            <div class="mono text-sm ink-muted mt-2" id="insight-period"></div>
+          </div>
+          <button class="mono text-xs px-3 py-2 border rule hover:bg-paper-deep" id="refresh-insights-btn" aria-label="Refresh weekly insights">Refresh</button>
+        </div>
+
+        <article class="entry-page p-8 md:p-14" style="background: var(--paper); border: 1px solid var(--rule); box-shadow: 0 20px 40px -20px var(--shadow-sm);" aria-label="Insights report" aria-live="polite">
+          <div class="serif text-lg md:text-xl leading-[1.7] ink-soft" style="font-weight: 300;" id="insight-content">
+          </div>
+
+          <div class="mt-10 pt-6 border-t rule flex items-baseline justify-between">
+            <div class="mono text-xs ink-muted">— speculae</div>
+            <div class="mono text-[10px] ink-muted">generated locally · 0 network calls</div>
+          </div>
+        </article>
+
+        <div class="mt-6 mono text-xs ink-muted flex items-center gap-2">
+          <span class="oxblood">$</span> speculae insights --days 7
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: BREATHE ─────────── -->
+    <section id="view-breathe" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Breathing exercises">
+      <div class="wellness-view">
+        <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2" aria-hidden="true">§ breathe</div>
+        <h1 class="serif text-4xl md:text-5xl mb-8" style="font-weight: 400;">Breathe.</h1>
+
+        <div class="exercise-picker" role="group" aria-label="Select breathing exercise">
+          <button class="duration-btn active" data-exercise="box" aria-pressed="true">Box 4-4-4-4</button>
+          <button class="duration-btn" data-exercise="478" aria-pressed="false">4-7-8</button>
+          <button class="duration-btn" data-exercise="coherent" aria-pressed="false">Coherent 5-5</button>
+          <button class="duration-btn" data-exercise="sigh" aria-pressed="false">Physiological sigh</button>
+        </div>
+
+        <div class="breathe-circle-wrap" aria-hidden="true">
+          <div class="breathe-circle" id="breathe-circle"></div>
+          <div class="breathe-label" id="breathe-label">Ready</div>
+        </div>
+        <!-- Screen reader equivalent of the visual breathing guide -->
+        <div class="sr-only" id="breathe-sr-status" aria-live="assertive" aria-atomic="true"></div>
+
+        <div class="breathe-cycles" id="breathe-cycles" aria-live="polite">0 cycles</div>
+
+        <div class="mt-6">
+          <button class="wellness-btn primary" id="breathe-start-btn" aria-label="Start breathing exercise">Start</button>
+        </div>
+
+        <div class="mt-10 pt-6 border-t rule-soft" style="max-width: 320px; margin-left:auto; margin-right:auto;">
+          <p class="mono text-[10px] ink-muted leading-relaxed" id="exercise-desc" aria-live="polite">
+            Box breathing: equal inhale, hold, exhale, hold — 4 seconds each.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: MEDITATE ─────────── -->
+    <section id="view-meditate" class="view px-6 md:px-16 py-12 md:py-20" aria-label="Meditation timer">
+      <div class="wellness-view">
+        <div class="mono text-[10px] ink-muted tracking-widest uppercase mb-2" aria-hidden="true">§ meditate</div>
+        <h1 class="serif text-4xl md:text-5xl mb-8" style="font-weight: 400;">Sit.</h1>
+
+        <div class="duration-picker" id="duration-picker" role="group" aria-label="Select meditation duration">
+          <button class="duration-btn" data-minutes="5" aria-pressed="false">5 min</button>
+          <button class="duration-btn active" data-minutes="10" aria-pressed="true">10 min</button>
+          <button class="duration-btn" data-minutes="15" aria-pressed="false">15 min</button>
+          <button class="duration-btn" data-minutes="20" aria-pressed="false">20 min</button>
+          <button class="duration-btn" data-minutes="30" aria-pressed="false">30 min</button>
+        </div>
+
+        <div class="meditate-timer-wrap" aria-hidden="true">
+          <svg width="220" height="220" viewBox="0 0 220 220" role="presentation">
+            <circle class="meditate-timer-bg" cx="110" cy="110" r="100"></circle>
+            <circle class="meditate-timer-progress" id="meditate-progress" cx="110" cy="110" r="100"
+              stroke-dasharray="628.318" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="meditate-timer-text" id="meditate-time">10:00</div>
+        </div>
+        <!-- Screen reader equivalent timer announcement -->
+        <div class="sr-only" id="meditate-sr-status" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="mt-4">
+          <button class="wellness-btn primary" id="meditate-start-btn" aria-label="Begin meditation timer">Begin</button>
+        </div>
+
+        <button class="ambient-toggle" id="ambient-toggle" aria-pressed="false" aria-label="Toggle ambient white noise sound">
+          <span aria-hidden="true">♪</span> Ambient
+        </button>
+      </div>
+    </section>
+
+    <!-- ─────────── VIEW: CONSTELLATION ─────────── -->
+    <section id="view-constellation" class="view" aria-label="Entry constellation">
+      <div class="constellation-header">
+        <div class="constellation-title">§ constellation</div>
+        <div class="constellation-title" id="constellation-range" style="opacity:0.45"></div>
+      </div>
+      <div class="constellation-legend" id="constellation-legend"></div>
+      <canvas class="constellation-canvas" id="constellation-canvas" role="img" aria-label="Star field of journal entries plotted by date and mood"></canvas>
+      <div class="constellation-empty" id="constellation-empty" style="display:none">write a few entries first.<br>then come back<br>and look at the shape of it.</div>
+      <div class="constellation-tooltip" id="constellation-tooltip"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ─────────── ONBOARDING OVERLAY ─────────── -->
+<div id="onboarding-overlay" role="dialog" aria-modal="true" aria-label="Welcome to Speculae">
+  <div class="onboarding-inner">
+    <div class="onboarding-wordmark">speculae</div>
+    <div class="onboarding-sub">journal · offline · private</div>
+    <div class="onboarding-prompt">this is your journal.<br>it holds what you carry.</div>
+    <div class="onboarding-caption">what should we call you?</div>
+    <input class="onboarding-input" id="onboarding-name-input" type="text" placeholder="your name" maxlength="40" autocomplete="off" aria-label="Enter your name" />
+    <button class="onboarding-begin" id="onboarding-begin-btn" aria-label="Begin using Speculae">begin</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close">&times;</button>
+  <img id="lightbox-img" src="" alt="full image">
+</div>
+
+<div class="toast" id="toast">
+  <span id="toast-msg"></span>
+  <button class="toast-close" id="toast-close">&times;</button>
+</div>
+
+<!-- ─────────── SETTINGS OVERLAY ─────────── -->
+<div class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="overlay-card">
+    <h2 id="settings-title">Settings</h2>
+
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="ai-enabled">
+        <span class="slider"></span>
+      </label>
+      <span class="mono text-xs ink-soft">AI-powered insights</span>
+    </div>
+
+    <div id="ai-settings-fields">
+      <div class="field-group">
+        <label>Provider</label>
+        <select id="ai-provider">
+          <option value="openai">OpenAI</option>
+          <option value="gemini">Google Gemini</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
+      <div class="field-group" id="base-url-group" style="display:none">
+        <label>Base URL</label>
+        <input type="text" id="ai-base-url" placeholder="https://your-endpoint.com/v1">
+      </div>
+
+      <div class="field-group">
+        <label>Model</label>
+        <input type="text" id="ai-model" placeholder="auto">
+      </div>
+
+      <div class="field-group">
+        <label>API Key</label>
+        <div class="key-input-wrap">
+          <input type="password" id="ai-api-key" placeholder="paste your key">
+          <button class="eye-btn" id="eye-toggle" aria-label="toggle key visibility">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="mono text-[10px] ink-muted mt-1" id="key-hint"></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button id="settings-close">Cancel</button>
+      <button class="primary" id="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+// ─── Helpers ───
+function fmtDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+const DAYS_SHORT = ['sun','mon','tue','wed','thu','fri','sat'];
+
+function fmtDisplay(d) {
+  return `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function isoToday() { return fmtDate(new Date()); }
+
+async function api(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// ─── State ───
+let currentDate = new Date();
+let currentEntryId = null;
+let currentMood = null;
+let currentEnergy = null;
+let currentTags = [];
+let totalEntries = 0;
+let readDays = 14;
+let writeEntries = [];
+let currentAgentId = 'human';
+let agents = [];
+
+// ─── Markdown setup ───
+if (typeof marked !== 'undefined') {
+  marked.setOptions({ gfm: true, breaks: true });
+}
+
+// ─── View Switcher ───
+const navItems = document.querySelectorAll('.nav-item');
+const views = document.querySelectorAll('.view');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.getAttribute('data-view');
+    navItems.forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${target}`).classList.add('active');
+    window.scrollTo(0, 0);
+    if (target === 'dashboard') loadDashboard();
+    if (target === 'read') loadReadView();
+    if (target === 'calendar') loadCalendar();
+    if (target === 'patterns') loadPatterns();
+    if (target === 'insights') loadInsights();
+    if (target === 'write') { showWhisper(); updateWriteContextLabel(); }
+    if (target === 'constellation') renderConstellation();
+  });
+});
+
+// Mobile nav
+document.querySelector('.mobile-bar select')?.addEventListener('change', (e) => {
+  const target = e.target.value.toLowerCase();
+  const viewMap = { 'home': 'dashboard' };
+  document.querySelector(`.nav-item[data-view="${viewMap[target] || target}"]`)?.click();
+});
+
+// ─── Keyboard shortcuts ───
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    saveEntry();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey) {
+    const key = e.key.toLowerCase();
+    const map = { d: 'dashboard', w: 'write', r: 'read', p: 'patterns', c: 'calendar', i: 'insights', b: 'breathe', m: 'meditate' };
+    if (map[key]) {
+      e.preventDefault();
+      document.querySelector(`.nav-item[data-view="${map[key]}"]`)?.click();
+    }
+  }
+});
+
+// ─── Focus Mode ───
+let focusMode = false;
+document.getElementById('focus-toggle')?.addEventListener('click', () => {
+  focusMode = !focusMode;
+  document.body.classList.toggle('focus-mode', focusMode);
+  document.getElementById('focus-toggle').textContent = focusMode ? 'Exit Focus' : 'Focus';
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && focusMode) {
+    focusMode = false;
+    document.body.classList.remove('focus-mode');
+    document.getElementById('focus-toggle').textContent = 'Focus';
+  }
+});
+
+// ─── Markdown Editor ───
+const entryText = document.getElementById('entry-text');
+const mdPreview = document.getElementById('md-preview');
+const mdSplit = document.getElementById('md-split');
+let editorMode = 'edit';
+
+function updatePreview() {
+  const raw = entryText.value;
+  if (typeof marked !== 'undefined') {
+    mdPreview.innerHTML = marked.parse(raw);
+  } else {
+    mdPreview.textContent = raw;
+  }
+}
+
+entryText.addEventListener('input', () => {
+  const text = entryText.value.trim();
+  const words = text === '' ? 0 : text.split(/\s+/).length;
+  document.getElementById('word-count').textContent = words;
+  updatePreview();
+});
+
+// Toolbar buttons
+document.getElementById('md-toolbar').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  const mode = btn.dataset.mode;
+  if (mode) {
+    setEditorMode(mode);
+    return;
+  }
+
+  const md = btn.dataset.md;
+  if (!md) return;
+
+  const ta = entryText;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end);
+
+  const wrap = {
+    bold:       { before: '**', after: '**', placeholder: 'bold text' },
+    italic:     { before: '_', after: '_', placeholder: 'italic text' },
+    heading:    { before: '## ', after: '', placeholder: 'Heading' },
+    list:       { before: '- ', after: '', placeholder: 'list item' },
+    checklist:  { before: '- [ ] ', after: '', placeholder: 'task item' },
+    code:       { before: '`', after: '`', placeholder: 'code' },
+    link:       { before: '[', after: '](url)', placeholder: 'link text' },
+    quote:      { before: '> ', after: '', placeholder: 'quote' },
+  };
+
+  const w = wrap[md];
+  if (!w) return;
+
+  const text = selected || w.placeholder;
+  const replacement = w.before + text + w.after;
+  ta.setRangeText(replacement, start, end, 'select');
+  ta.focus();
+  updatePreview();
+});
+
+function setEditorMode(mode) {
+  editorMode = mode;
+  mdSplit.className = 'md-split mode-' + mode;
+  document.querySelectorAll('#md-toolbar .mode-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  if (mode !== 'edit') updatePreview();
+}
+
+// ─── Mood/Energy ───
+document.querySelectorAll('#mood-selector .selector-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const val = parseInt(dot.getAttribute('data-val'));
+    currentMood = currentMood === val ? null : val;
+    updateMoodDots();
+  });
+});
+
+document.querySelectorAll('#energy-selector .selector-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const val = parseInt(dot.getAttribute('data-val'));
+    currentEnergy = currentEnergy === val ? null : val;
+    updateEnergyDots();
+  });
+});
+
+function updateMoodDots() {
+  document.querySelectorAll('#mood-selector .selector-dot').forEach(d => d.classList.remove('active'));
+  if (currentMood) {
+    for (let i = 1; i <= currentMood; i++) {
+      document.querySelector(`#mood-selector .selector-dot[data-val="${i}"]`).classList.add('active');
+    }
+  }
+  document.getElementById('mood-val').textContent = currentMood || '—';
+}
+
+function updateEnergyDots() {
+  document.querySelectorAll('#energy-selector .selector-dot').forEach(d => d.classList.remove('active'));
+  if (currentEnergy) {
+    for (let i = 1; i <= currentEnergy; i++) {
+      document.querySelector(`#energy-selector .selector-dot[data-val="${i}"]`).classList.add('active');
+    }
+  }
+  document.getElementById('energy-val').textContent = currentEnergy || '—';
+}
+
+// ─── Tags ───
+const tagInput = document.getElementById('tag-input');
+const tagContainer = document.getElementById('tag-container');
+
+function createTagChip(text) {
+  const chip = document.createElement('div');
+  chip.className = 'tag-chip';
+  chip.innerHTML = `${text} <button>&times;</button>`;
+  chip.querySelector('button').addEventListener('click', () => {
+    chip.remove();
+    currentTags = currentTags.filter(t => t !== text);
+  });
+  return chip;
+}
+
+function renderTags() {
+  tagContainer.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  currentTags.forEach(t => tagContainer.insertBefore(createTagChip(t), tagInput));
+}
+
+tagInput.addEventListener('keydown', (e) => {
+  if (e.key === ',' || e.key === 'Enter') {
+    e.preventDefault();
+    const text = tagInput.value.trim().replace(',', '').toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (text && !currentTags.includes(text)) {
+      currentTags.push(text);
+      tagContainer.insertBefore(createTagChip(text), tagInput);
+    }
+    tagInput.value = '';
+  } else if (e.key === 'Backspace' && tagInput.value === '') {
+    if (currentTags.length > 0) {
+      currentTags.pop();
+      renderTags();
+    }
+  }
+});
+
+// ─── Entry List / Day Timeline (Write View) ───
+function renderEntryList() {
+  // Timeline lives below the editor — find or create its container.
+  let timeline = document.getElementById('day-timeline');
+  if (!timeline) {
+    timeline = document.createElement('div');
+    timeline.id = 'day-timeline';
+    timeline.className = 'day-timeline';
+    // Insert after the bottom-toolbar section inside view-write.
+    const bottomBar = document.querySelector('#view-write .bottom-toolbar')?.closest('.mt-8');
+    if (bottomBar) bottomBar.after(timeline);
+    else document.querySelector('#view-write .max-w-3xl')?.appendChild(timeline);
+  }
+
+  const count = document.getElementById('write-entry-count');
+  const otherEntries = writeEntries.filter(e => e.id !== currentEntryId);
+  count.textContent = `${writeEntries.length} ${writeEntries.length === 1 ? 'entry' : 'entries'}`;
+
+  if (otherEntries.length === 0) {
+    timeline.innerHTML = '';
+    return;
+  }
+
+  // Sort chronologically.
+  const sorted = [...otherEntries].sort((a, b) => {
+    const ta = a.created_at ? new Date(a.created_at) : 0;
+    const tb = b.created_at ? new Date(b.created_at) : 0;
+    return ta - tb;
+  });
+
+  let html = '';
+  sorted.forEach((e, i) => {
+    const t = e.created_at ? new Date(e.created_at) : null;
+    const ts = t
+      ? `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`
+      : '—';
+    const delay = (i * 80) + 'ms';
+    const isCurrent = e.id === currentEntryId;
+    const rendered = e.content
+      ? (typeof marked !== 'undefined' ? marked.parse(e.content) : e.content.replace(/\n/g,'<br>'))
+      : '<em style="opacity:0.4">(empty)</em>';
+
+    // Mood dots
+    let moodDots = '';
+    if (e.mood) {
+      for (let d = 1; d <= 5; d++) {
+        const filled = d <= e.mood;
+        moodDots += `<span class="timeline-mood-dot" style="background:${filled ? 'var(--ochre)' : 'var(--rule)'};"></span>`;
+      }
+    }
+
+    html += `
+      <div class="timeline-divider" style="animation-delay:${delay}" role="separator" aria-label="Entry at ${ts}">
+        <div class="timeline-divider-line"></div>
+        <div class="timeline-divider-stamp">${ts}</div>
+        <div class="timeline-divider-line"></div>
+      </div>
+      <div class="timeline-entry-card${isCurrent ? ' is-current' : ''}" style="animation-delay:${(i*80)+30}ms" data-entry-id="${e.id}">
+        <div class="timeline-entry-content" role="button" tabindex="0"
+             aria-label="Edit entry from ${ts}" title="Click to edit this entry">
+          ${rendered}
+        </div>
+        <div class="timeline-entry-meta">
+          ${moodDots ? '<div class="timeline-mood-dots">' + moodDots + '</div>' : ''}
+          ${e.starred ? '<span style="color:var(--ochre)">★</span>' : ''}
+          <span class="timeline-edit-hint">click to edit ↑</span>
+        </div>
+      </div>`;
+  });
+
+  timeline.innerHTML = html;
+  // Attach click handlers.
+  timeline.querySelectorAll('.timeline-entry-card').forEach(card => {
+    const handler = () => {
+      const entry = writeEntries.find(e => e.id === card.dataset.entryId);
+      if (entry) loadEntryIntoEditor(entry);
+    };
+    card.querySelector('.timeline-entry-content')?.addEventListener('click', handler);
+    card.querySelector('.timeline-entry-content')?.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); handler(); }
+    });
+  });
+}
+
+let currentStarred = false;
+
+function loadEntryIntoEditor(entry) {
+  currentEntryId = entry.id;
+  entryText.style.opacity = '0.5';
+  setTimeout(() => { entryText.style.opacity = '1'; }, 100);
+  entryText.value = entry.content || '';
+  currentMood = entry.mood;
+  currentEnergy = entry.energy;
+  currentTags = entry.tags || [];
+  currentStarred = entry.starred || false;
+  updateMoodDots();
+  updateEnergyDots();
+  renderTags();
+  updateStarBtn();
+  const words = entry.content ? entry.content.trim().split(/\s+/).length : 0;
+  document.getElementById('word-count').textContent = words;
+  document.getElementById('delete-entry-btn').style.display = '';
+  document.getElementById('image-section').style.display = '';
+  updatePreview();
+  renderEntryList();
+  loadEntryImages(entry.id);
+}
+
+function clearEditor() {
+  currentEntryId = null;
+  entryText.value = '';
+  currentMood = null;
+  currentEnergy = null;
+  currentTags = [];
+  currentStarred = false;
+  updateMoodDots();
+  updateEnergyDots();
+  renderTags();
+  updateStarBtn();
+  document.getElementById('word-count').textContent = '0';
+  document.getElementById('delete-entry-btn').style.display = 'none';
+  document.getElementById('image-section').style.display = 'none';
+  document.getElementById('thumb-grid').innerHTML = '';
+  updatePreview();
+  renderEntryList();
+}
+
+document.getElementById('new-entry-btn').addEventListener('click', clearEditor);
+
+// ─── Star Toggle ───
+const starBtn = document.getElementById('star-btn');
+
+function updateStarBtn() {
+  starBtn.textContent = currentStarred ? '★' : '☆';
+  starBtn.classList.toggle('starred', currentStarred);
+}
+
+starBtn.addEventListener('click', async () => {
+  if (!currentEntryId) {
+    showToast('Save the entry first.');
+    return;
+  }
+  currentStarred = !currentStarred;
+  updateStarBtn();
+  try {
+    await api(`/api/entries/${currentEntryId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ starred: currentStarred }),
+    });
+    showToast(currentStarred ? 'Starred.' : 'Unstarred.');
+  } catch (e) {
+    currentStarred = !currentStarred;
+    updateStarBtn();
+    showToast('Failed to toggle star.');
+  }
+});
+
+// ─── Save / Load Entry ───
+async function saveEntry(silent = false) {
+  const dateStr = fmtDate(currentDate);
+  const content = entryText.value.trim();
+  const agentParam = currentAgentId !== 'human' ? `&agent_id=${currentAgentId}` : '';
+  const data = { 
+    content, 
+    mood: currentMood, 
+    energy: currentEnergy, 
+    tags: currentTags,
+    id: currentEntryId,
+    agent_id: currentAgentId !== 'human' ? currentAgentId : undefined,
+  };
+  try {
+    const result = await api(`/api/entries/${dateStr}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    document.getElementById('save-status').textContent = 'saved';
+    if (!silent) showToast('Saved.');
+    currentEntryId = result.id;
+    document.getElementById('image-section').style.display = '';
+    await loadWriteEntry();
+  } catch (e) {
+    console.error('save:', e);
+    document.getElementById('save-status').textContent = 'save failed';
+    if (!silent) showToast('Save failed.');
+  }
+}
+
+document.getElementById('delete-entry-btn').addEventListener('click', async () => {
+  if (!currentEntryId) return;
+  if (!confirm('Delete this entry?')) return;
+  try {
+    await api(`/api/entries/${currentEntryId}`, { method: 'DELETE' });
+    showToast('Deleted.');
+    currentEntryId = null;
+    await loadWriteEntry();
+  } catch {
+    showToast('Delete failed.');
+  }
+});
+
+async function loadWriteEntry() {
+  const dateStr = fmtDate(currentDate);
+  updateWriteDateLabel();
+  try {
+    const agentParam = currentAgentId !== 'human' ? `?agent_id=${currentAgentId}` : '';
+    writeEntries = await api(`/api/entries/${dateStr}${agentParam}`);
+    if (!Array.isArray(writeEntries)) writeEntries = [];
+    if (writeEntries.length > 0) {
+      const currentStillExists = writeEntries.find(e => e.id === currentEntryId);
+      if (currentStillExists) {
+        loadEntryIntoEditor(currentStillExists);
+      } else {
+        loadEntryIntoEditor(writeEntries[0]);
+      }
+    } else {
+      clearEditor();
+    }
+  } catch (e) {
+    console.error('loadWriteEntry:', e);
+    writeEntries = [];
+    clearEditor();
+  }
+}
+
+// Date nav
+document.addEventListener('keydown', (e) => {
+  if (!e.ctrlKey && !e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    if (document.getElementById('view-write').classList.contains('active')) {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') {
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      currentEntryId = null;
+      loadWriteEntry();
+    }
+  }
+});
+
+// Auto-save on navigation away (silent — no toast)
+function autoSave() {
+  const content = entryText.value.trim();
+  if (content || currentMood || currentEnergy || currentTags.length > 0) {
+    saveEntry(true);
+  }
+}
+
+function updateWriteDateLabel() {
+  document.getElementById('write-date-label').textContent = fmtDisplay(currentDate);
+}
+
+// ─── Prompts ───
+const PROMPTS = [
+  "What small thing caught your attention today?",
+  "What would you tell yesterday's version of yourself?",
+  "What felt heavier than it should have?",
+  "Where did the time go today?",
+  "What are you avoiding right now?",
+  "What made you smile, even briefly?",
+  "What does this moment smell like?",
+  "If today had a colour, what would it be?",
+  "What would you do differently if nobody was watching?",
+  "What's one thing you're grateful for today?",
+  "What surprised you today?",
+  "What did you learn today — even something small?",
+  "How is your body feeling right now?",
+  "What would you say to a friend who felt like you do right now?",
+  "What's one boundary you held today?",
+  "What did you notice about the sky today?",
+  "What sound was present today that you liked?",
+  "If you could bottle today's feeling, what would the label say?",
+  "What conversation keeps replaying in your mind?",
+  "What would change if you trusted yourself more today?",
+  "What was the best part of your routine today?",
+  "Write a letter to next week's version of yourself.",
+  "What are three sounds you heard today?",
+  "What is the most honest thing you can say right now?",
+  "What did your hands do today?",
+  "Describe the light where you are right now.",
+  "What needs to be let go of?",
+];
+
+let promptIndex = Math.floor(Math.random() * PROMPTS.length);
+
+function showPrompt() {
+  document.getElementById('prompt-text').textContent = PROMPTS[promptIndex];
+}
+
+document.getElementById('new-prompt-btn').addEventListener('click', () => {
+  promptIndex = (promptIndex + 1) % PROMPTS.length;
+  showPrompt();
+});
+
+showPrompt();
+
+// ─── Image Attachments ───
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const thumbGrid = document.getElementById('thumb-grid');
+let entryImages = [];
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleImageFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length > 0) handleImageFiles(fileInput.files);
+  fileInput.value = '';
+});
+
+document.addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  if (!document.getElementById('view-write').classList.contains('active')) return;
+  const files = [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const f = item.getAsFile();
+      if (f) files.push(f);
+    }
+  }
+  if (files.length > 0) handleImageFiles(files);
+});
+
+async function handleImageFiles(fileList) {
+  if (!currentEntryId) {
+    showToast('Save the entry first, then attach images.');
+    return;
+  }
+  for (const file of fileList) {
+    if (!file.type.startsWith('image/')) continue;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch(`${API}/api/entries/${currentEntryId}/images`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      showToast('Image uploaded.');
+    } catch (e) {
+      console.error('upload:', e);
+      showToast('Image upload failed.');
+    }
+  }
+  loadEntryImages(currentEntryId);
+}
+
+async function loadEntryImages(entryId) {
+  thumbGrid.innerHTML = '';
+  entryImages = [];
+  try {
+    const images = await api(`/api/entries/${entryId}/images`);
+    if (!Array.isArray(images)) return;
+    entryImages = images;
+    images.forEach(img => {
+      const wrap = document.createElement('div');
+      wrap.className = 'thumb-wrap';
+      const imgEl = document.createElement('img');
+      imgEl.src = `${API}/api/images/${img.id}`;
+      imgEl.alt = img.filename || 'attachment';
+      const delBtn = document.createElement('button');
+      delBtn.className = 'thumb-delete';
+      delBtn.textContent = '\u00d7';
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('Delete this image?')) return;
+        try {
+          await api(`/api/images/${img.id}`, { method: 'DELETE' });
+          loadEntryImages(entryId);
+          showToast('Image deleted.');
+        } catch { showToast('Delete failed.'); }
+      });
+      wrap.appendChild(imgEl);
+      wrap.appendChild(delBtn);
+      wrap.addEventListener('click', () => openLightbox(imgEl.src));
+      thumbGrid.appendChild(wrap);
+    });
+  } catch (e) {
+    // No images endpoint or error — silently ignore
+  }
+}
+
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+document.getElementById('lightbox-close').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.remove('show');
+});
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+// ─── Read View ───
+let filterStarred = false;
+let filterTag = '';
+let filterMood = '';
+let searchQuery = '';
+let selectedEntryIds = new Set();
+let currentReadEntries = [];
+
+function updateBatchUI() {
+  const bar = document.getElementById('batch-actions-bar');
+  const countSpan = document.getElementById('batch-count');
+  const deleteCountSpan = document.getElementById('batch-delete-count');
+  const selectAllLabel = document.getElementById('select-all-label');
+
+  const count = selectedEntryIds.size;
+  if (count > 0) {
+    if (bar) bar.style.display = 'flex';
+    if (countSpan) countSpan.textContent = `${count} selected`;
+    if (deleteCountSpan) deleteCountSpan.textContent = String(count);
+  } else {
+    if (bar) bar.style.display = 'none';
+  }
+
+  const allSelected = currentReadEntries.length > 0 && currentReadEntries.every(e => selectedEntryIds.has(e.id));
+  if (selectAllLabel) {
+    selectAllLabel.textContent = allSelected ? '☑ select all' : '☐ select all';
+  }
+
+  document.querySelectorAll('.entry-row[data-entry-id]').forEach(row => {
+    const id = row.dataset.entryId;
+    const isSel = selectedEntryIds.has(id);
+    row.classList.toggle('is-selected', isSel);
+    const chk = row.querySelector('.entry-chk');
+    if (chk) chk.checked = isSel;
+  });
+}
+
+async function loadReadView() {
+  const container = document.getElementById('entry-list');
+  try {
+    let url = `/api/entries?days=${readDays}`;
+    if (currentAgentId !== 'human') url += `&agent_id=${currentAgentId}`;
+    if (searchQuery) url += `&q=${encodeURIComponent(searchQuery)}`;
+    if (filterTag) url += `&tag=${encodeURIComponent(filterTag)}`;
+    if (filterMood) url += `&mood=${filterMood}`;
+    if (filterStarred) url += `&starred=true`;
+
+    const entries = await api(url);
+    if (!entries || entries.length === 0) {
+      currentReadEntries = [];
+      container.innerHTML = '<div class="entry-row"><div></div><div></div><div class="mono text-xs ink-muted">No entries yet.</div><div></div><div></div></div>';
+      document.getElementById('read-count').textContent = '0 entries';
+      updateBatchUI();
+      return;
+    }
+    currentReadEntries = entries.slice().reverse();
+    let html = '';
+    currentReadEntries.forEach(e => {
+      const d = new Date(e.date + 'T12:00:00');
+      const dateStr = `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+      let timeStr = '';
+      if (e.created_at) {
+        const t = new Date(e.created_at);
+        timeStr = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+      }
+      const preview = e.content ? e.content.slice(0, 80) + (e.content.length > 80 ? '...' : '') : '(empty)';
+      let dots = '';
+      if (e.mood) {
+        for (let i = 1; i <= 5; i++) {
+          dots += `<span class="w-2 h-2 rounded-full ${i <= e.mood ? 'bg-ink-soft' : 'border border-rule'}"></span>`;
+        }
+      }
+      const starHtml = e.starred
+        ? '<span class="star-icon-inline starred">★</span>'
+        : '<span class="star-icon-inline">☆</span>';
+      const isChecked = selectedEntryIds.has(e.id);
+      html += `<div class="entry-row${isChecked ? ' is-selected' : ''}" data-date="${e.date}" data-entry-id="${e.id}">
+        <div class="chk-col flex items-center justify-center">
+          <input type="checkbox" class="entry-chk" data-entry-id="${e.id}" ${isChecked ? 'checked' : ''} aria-label="Select entry from ${e.date}">
+        </div>
+        <div>${starHtml}</div>
+        <div class="mono text-xs ink-muted">${dateStr}<span class="ml-2 opacity-50">${timeStr}</span></div>
+        <div class="preview text-base ink-soft truncate">${preview}</div>
+        <div class="flex gap-1 items-center">${dots}</div>
+      </div>`;
+    });
+    container.innerHTML = html;
+    document.getElementById('read-count').textContent = `${entries.length} entries`;
+    updateBatchUI();
+
+    container.querySelectorAll('.entry-row').forEach(row => {
+      const chk = row.querySelector('.entry-chk');
+      if (chk) {
+        chk.addEventListener('change', (evt) => {
+          evt.stopPropagation();
+          const id = row.dataset.entryId;
+          if (chk.checked) selectedEntryIds.add(id);
+          else selectedEntryIds.delete(id);
+          updateBatchUI();
+        });
+      }
+      row.addEventListener('click', (evt) => {
+        if (evt.target.classList.contains('entry-chk') || evt.target.closest('.chk-col')) return;
+        currentDate = new Date(row.dataset.date + 'T12:00:00');
+        currentEntryId = row.dataset.entryId || null;
+        document.querySelector('.nav-item[data-view="write"]')?.click();
+        loadWriteEntry();
+      });
+    });
+  } catch (e) {
+    container.innerHTML = '<div class="entry-row"><div></div><div></div><div class="mono text-xs ink-muted">Could not load entries.</div><div></div><div></div></div>';
+  }
+}
+
+document.getElementById('load-more-btn')?.addEventListener('click', () => {
+  readDays += 30;
+  loadReadView();
+});
+
+// Batch action handlers
+document.getElementById('select-all-chip')?.addEventListener('click', () => {
+  const allSelected = currentReadEntries.length > 0 && currentReadEntries.every(e => selectedEntryIds.has(e.id));
+  if (allSelected) {
+    currentReadEntries.forEach(e => selectedEntryIds.delete(e.id));
+  } else {
+    currentReadEntries.forEach(e => selectedEntryIds.add(e.id));
+  }
+  updateBatchUI();
+});
+
+document.getElementById('batch-clear-btn')?.addEventListener('click', () => {
+  selectedEntryIds.clear();
+  updateBatchUI();
+});
+
+document.getElementById('batch-delete-btn')?.addEventListener('click', async () => {
+  const count = selectedEntryIds.size;
+  if (count === 0) return;
+  const msg = `Permanently delete ${count} selected ${count === 1 ? 'entry' : 'entries'}? This cannot be undone.`;
+  if (!confirm(msg)) return;
+
+  try {
+    const ids = Array.from(selectedEntryIds);
+    const res = await api('/api/entries/batch', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+    showToast(`${res.deleted_count || count} entries deleted.`);
+    selectedEntryIds.clear();
+    await loadReadView();
+  } catch (err) {
+    showToast('Failed to delete entries.');
+  }
+});
+
+// Search & filter handlers
+document.getElementById('search-input')?.addEventListener('input', (e) => {
+  searchQuery = e.target.value.trim();
+  loadReadView();
+});
+
+document.getElementById('filter-tag')?.addEventListener('input', (e) => {
+  filterTag = e.target.value.trim();
+  loadReadView();
+});
+
+document.getElementById('filter-mood')?.addEventListener('change', (e) => {
+  filterMood = e.target.value;
+  loadReadView();
+});
+
+document.getElementById('filter-starred-chip')?.addEventListener('click', () => {
+  filterStarred = !filterStarred;
+  const chip = document.getElementById('filter-starred-chip');
+  chip.classList.toggle('active', filterStarred);
+  document.getElementById('filter-starred-label').textContent = filterStarred ? '★ starred' : '☆ starred';
+  loadReadView();
+});
+
+// ─── Calendar ───
+async function loadCalendar() {
+  const heatmap = document.getElementById('heatmap-large');
+  heatmap.innerHTML = '';
+  try {
+    const [cal, stats] = await Promise.all([
+      api('/api/calendar?months=6'),
+      api('/api/stats'),
+    ]);
+
+    if (stats) {
+      document.getElementById('stat-entries').textContent = stats.total_entries || 0;
+      document.getElementById('stat-mood').textContent = stats.avg_mood_30d != null ? stats.avg_mood_30d : '—';
+    }
+
+    const today = new Date();
+    const startMonth = new Date(today.getFullYear(), today.getMonth() - 5, 1);
+    document.getElementById('cal-header').textContent =
+      `${MONTHS[startMonth.getMonth()].replace(/^./, c => c.toUpperCase())} ${startMonth.getFullYear()} — ${MONTHS[today.getMonth()].replace(/^./, c => c.toUpperCase())} ${today.getFullYear()}`;
+
+    const endDate = new Date(today);
+    const startDate = new Date(startMonth);
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const colors = isDark
+      ? ['transparent', '#3a3228', '#7a5a30', '#b8884a', '#d4a868', '#c45454']
+      : ['transparent', '#d4c8b0', '#c4a878', '#b8884a', '#a8742e', '#7a2e2e'];
+    const cells = [];
+    const d = new Date(startDate);
+    let todayAdded = false;
+
+    while (d <= endDate || d.getDay() !== 0) {
+      const key = fmtDate(d);
+      const info = cal[key];
+      const isToday = key === isoToday();
+      if (isToday) todayAdded = true;
+
+      let mood = info ? (info.mood || 0) : 0;
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      if (isToday) cell.classList.add('today');
+      if (mood === 0 || !info) {
+        cell.style.background = 'transparent';
+        cell.style.border = '1px solid var(--cal-empty-border)';
+      } else {
+        cell.style.background = colors[mood] || colors[0];
+      }
+      cell.title = mood ? `mood ${mood}` : 'no entry';
+      if (info && info.words) cell.title += ` · ${info.words} words`;
+      cell.addEventListener('click', () => {
+        currentDate = new Date(key + 'T12:00:00');
+        currentEntryId = null;
+        document.querySelector('.nav-item[data-view="write"]')?.click();
+        loadWriteEntry();
+      });
+      cells.push(cell);
+      d.setDate(d.getDate() + 1);
+    }
+
+    cells.forEach(c => heatmap.appendChild(c));
+
+    if (cal) {
+      const entries = Object.keys(cal).filter(k => cal[k].has_content).length;
+      const moods = Object.values(cal).filter(v => v.mood).map(v => v.mood);
+      const avgMood = moods.length ? (moods.reduce((a, b) => a + b, 0) / moods.length) : null;
+
+      let streak = 0;
+      let maxStreak = 0;
+      const d2 = new Date(today);
+      for (let i = 0; i < 180; i++) {
+        if (cal[fmtDate(d2)]?.has_content) {
+          streak++;
+          maxStreak = Math.max(maxStreak, streak);
+        } else {
+          streak = 0;
+        }
+        d2.setDate(d2.getDate() - 1);
+      }
+
+      const dowMoods = {};
+      Object.entries(cal).forEach(([k, v]) => {
+        if (v.mood) {
+          const day = new Date(k + 'T12:00:00').getDay();
+          if (!dowMoods[day]) dowMoods[day] = [];
+          dowMoods[day].push(v.mood);
+        }
+      });
+      let minDow = 0;
+      let minAvg = Infinity;
+      Object.entries(dowMoods).forEach(([day, vals]) => {
+        const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+        if (avg < minAvg) { minAvg = avg; minDow = parseInt(day); }
+      });
+
+      document.getElementById('stat-entries').textContent = entries;
+      document.getElementById('stat-mood').textContent = avgMood ? avgMood.toFixed(1) : '—';
+      document.getElementById('stat-streak').textContent = `${maxStreak}d`;
+      document.getElementById('stat-dimday').textContent = DAYS_SHORT[minDow].replace(/^./, c => c.toUpperCase());
+    }
+  } catch (e) {
+    heatmap.innerHTML = '<div class="ink-muted">Could not load calendar.</div>';
+  }
+}
+
+// ─── Patterns ───
+async function loadPatterns() {
+  const container = document.getElementById('patterns-container');
+  try {
+    const patterns = await api('/api/patterns');
+    if (!patterns || patterns.length === 0) {
+      container.innerHTML = `
+        <div class="specimen-card md:col-span-2">
+          <div class="flex justify-between items-start mb-3">
+            <div class="mono text-[10px] oxblood tracking-widest uppercase">sample · what patterns look like</div>
+          </div>
+          <p class="serif italic text-xl ink-soft leading-snug" style="font-weight: 300;">
+            "Patterns appear once you have enough entries. Write for a week and check back — it learns to see the shape of your emotional life."
+          </p>
+          <div class="mt-4 mono text-[10px] ink-muted">7+ entries needed to start detecting</div>
+        </div>`;
+      return;
+    }
+    let html = '';
+    patterns.forEach(p => {
+      const emoji = p.emoji || '\u00b7';
+      html += `<div class="specimen-card">
+        <div class="flex justify-between items-start mb-3">
+          <div class="mono text-[10px] oxblood tracking-widest uppercase">${p.type}</div>
+          <div class="mono text-[10px] ink-muted">${emoji}</div>
+        </div>
+        <p class="serif italic text-xl ink-soft leading-snug" style="font-weight: 300;">
+          "${p.title}"
+        </p>
+        <div class="mt-3 mono text-xs ink-muted">${p.description}</div>
+      </div>`;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="ink-muted">Could not load patterns.</div>';
+  }
+}
+
+// ─── Insights ───
+async function loadInsights(refresh = false) {
+  const contentEl = document.getElementById('insight-content');
+  try {
+    const insight = await api(`/api/insights${refresh ? '?refresh=true' : ''}`);
+    if (insight && insight.content) {
+      // Auto-refresh if the cached insight is from a different (older) week
+      if (!refresh) {
+        const today = new Date();
+        const periodEnd = new Date(insight.period_end + 'T12:00:00');
+        const daysDiff = Math.floor((today - periodEnd) / 86400000);
+        if (daysDiff > 7) {
+          return loadInsights(true);
+        }
+      }
+      const start = new Date(insight.period_start + 'T12:00:00');
+      // ISO week number
+      const jan4 = new Date(start.getFullYear(), 0, 4);
+      const weekNum = Math.ceil(((start - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+      document.getElementById('insight-week').textContent = weekNum;
+      document.getElementById('insight-period').textContent =
+        `${insight.period_start} \u2013 ${insight.period_end}`;
+      contentEl.innerHTML = `<p class="dropcap">${insight.content.replace(/\n\n/g, '</p><p class="mt-6">').replace(/\n/g, '<br>')}</p>`;
+    } else {
+      document.getElementById('insight-week').textContent = '\u2014';
+      document.getElementById('insight-period').textContent = '';
+      contentEl.innerHTML = `
+        <p class="mt-6">Your first insight will appear here once you have a week of entries behind you.</p>
+        <p class="mt-6 ink-muted italic">A letter from your past self, grounded in what you wrote. No prescriptions. Never "you should." Just: here's what I noticed.</p>`;
+    }
+  } catch (e) {
+    contentEl.innerHTML = `<p class="ink-muted italic">Could not load insights. Make sure the server is running.</p>`;
+  }
+}
+
+document.getElementById('refresh-insights-btn')?.addEventListener('click', () => loadInsights(true));
+document.getElementById('save-btn')?.addEventListener('click', saveEntry);
+
+// ─── Agent Selector ───
+async function loadAgents() {
+  try {
+    agents = await api('/api/agents');
+    if (!Array.isArray(agents) || agents.length === 0) {
+      agents = [];
+      document.getElementById('agent-selector-wrap').style.display = 'none';
+      return;
+    }
+    const sel = document.getElementById('agent-select');
+    const ownerName = getOwnerName();
+    sel.innerHTML = `<option value="human" id="human-option">${ownerName}</option>`;
+    
+    // Normalize string vs object agents
+    const normalized = agents.map(a => {
+      if (typeof a === 'string') return { id: a, name: a.charAt(0).toUpperCase() + a.slice(1) };
+      return { id: a.id || '', name: a.name || a.id || '', entry_count: a.entry_count };
+    }).filter(a => a.id && a.id.trim() !== '');
+
+    if (normalized.length === 0) {
+      document.getElementById('agent-selector-wrap').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('agent-selector-wrap').style.display = 'flex';
+    normalized.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.name;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    document.getElementById('agent-selector-wrap').style.display = 'none';
+  }
+}
+
+document.getElementById('agent-select')?.addEventListener('change', async (e) => {
+  currentAgentId = e.target.value;
+  updateAgentStats();
+  applyLensMode(currentAgentId);
+  loadWriteEntry();
+  if (document.getElementById('view-read').classList.contains('active')) loadReadView();
+});
+
+async function updateAgentStats() {
+  // Kept minimal to preserve clean context box UI
+}
+
+// ─── Breathe View ───
+const BREATHE_EXERCISES = {
+  box:     { phases: [{name:'Inhale',dur:4},{name:'Hold',dur:4},{name:'Exhale',dur:4},{name:'Hold',dur:4}], desc: 'Box breathing: equal inhale, hold, exhale, hold — 4 seconds each.' },
+  '478':   { phases: [{name:'Inhale',dur:4},{name:'Hold',dur:7},{name:'Exhale',dur:8}], desc: '4-7-8 breathing: inhale 4s, hold 7s, exhale 8s — a calming pattern.' },
+  coherent:{ phases: [{name:'Inhale',dur:5},{name:'Exhale',dur:5}], desc: 'Coherent breathing: equal inhale and exhale at 5 seconds — about 6 breaths per minute.' },
+  sigh:    { phases: [{name:'Inhale',dur:4},{name:'Sip',dur:1},{name:'Exhale',dur:6}], desc: 'Physiological sigh: inhale, small additional inhale, then long exhale — fastest way to calm down.' },
+};
+
+let breatheExercise = 'box';
+let breatheRunning = false;
+let breatheCycles = 0;
+let breatheTimeout = null;
+
+function setBreatheExercise(ex) {
+  breatheExercise = ex;
+  document.querySelectorAll('[data-exercise]').forEach(b => b.classList.toggle('active', b.dataset.exercise === ex));
+  document.getElementById('exercise-desc').textContent = BREATHE_EXERCISES[ex].desc;
+  if (breatheRunning) stopBreathe();
+}
+
+document.querySelectorAll('[data-exercise]').forEach(b => {
+  b.addEventListener('click', () => setBreatheExercise(b.dataset.exercise));
+});
+
+function stopBreathe() {
+  breatheRunning = false;
+  clearTimeout(breatheTimeout);
+  const circle = document.getElementById('breathe-circle');
+  circle.className = 'breathe-circle';
+  circle.style.removeProperty('--breathe-dur-in');
+  document.getElementById('breathe-label').textContent = 'Ready';
+  document.getElementById('breathe-start-btn').textContent = 'Start';
+}
+
+function startBreathe() {
+  if (breatheRunning) { stopBreathe(); return; }
+  breatheRunning = true;
+  breatheCycles = 0;
+  document.getElementById('breathe-start-btn').textContent = 'Stop';
+  document.getElementById('breathe-cycles').textContent = '0 cycles';
+  runBreathePhase(0);
+}
+
+function runBreathePhase(phaseIndex) {
+  if (!breatheRunning) return;
+  const ex = BREATHE_EXERCISES[breatheExercise];
+  if (phaseIndex >= ex.phases.length) {
+    breatheCycles++;
+    document.getElementById('breathe-cycles').textContent = `${breatheCycles} cycle${breatheCycles !== 1 ? 's' : ''}`;
+    // Pulse effect on cycle completion
+    const circle = document.getElementById('breathe-circle');
+    circle.style.transition = 'box-shadow 0.3s ease';
+    circle.style.boxShadow = '0 0 40px rgba(184, 136, 74, 0.5)';
+    setTimeout(() => { circle.style.boxShadow = ''; }, 300);
+    runBreathePhase(0);
+    return;
+  }
+  const phase = ex.phases[phaseIndex];
+  const circle = document.getElementById('breathe-circle');
+  const label = document.getElementById('breathe-label');
+
+  circle.style.setProperty('--breathe-dur-in', phase.dur + 's');
+  label.textContent = phase.name;
+
+  if (phase.name === 'Inhale' || phase.name === 'Sip') {
+    circle.className = 'breathe-circle animating expand';
+  } else if (phase.name === 'Hold') {
+    circle.className = 'breathe-circle animating hold';
+  } else {
+    circle.className = 'breathe-circle animating contract';
+  }
+
+  breatheTimeout = setTimeout(() => {
+    runBreathePhase(phaseIndex + 1);
+  }, phase.dur * 1000);
+}
+
+document.getElementById('breathe-start-btn').addEventListener('click', startBreathe);
+
+// ─── Meditate View ───
+let meditateDuration = 10 * 60; // seconds
+let meditateRemaining = meditateDuration;
+let meditateRunning = false;
+let meditateInterval = null;
+let ambientCtx = null;
+let ambientPlaying = false;
+let ambientSource = null;
+
+document.querySelectorAll('#duration-picker .duration-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (meditateRunning) return;
+    document.querySelectorAll('#duration-picker .duration-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    meditateDuration = parseInt(b.dataset.minutes) * 60;
+    meditateRemaining = meditateDuration;
+    updateMeditateDisplay();
+  });
+});
+
+const MED_CIRCUMFERENCE = 2 * Math.PI * 100; // radius=100
+
+function updateMeditateDisplay() {
+  const min = Math.floor(meditateRemaining / 60);
+  const sec = meditateRemaining % 60;
+  document.getElementById('meditate-time').textContent = `${min}:${String(sec).padStart(2, '0')}`;
+  const pct = meditateDuration > 0 ? (1 - meditateRemaining / meditateDuration) : 0;
+  document.getElementById('meditate-progress').setAttribute('stroke-dashoffset', MED_CIRCUMFERENCE * pct);
+}
+
+function startMeditate() {
+  if (meditateRunning) { stopMeditate(); return; }
+  meditateRunning = true;
+  meditateRemaining = meditateDuration;
+  updateMeditateDisplay();
+  document.getElementById('meditate-start-btn').textContent = 'Stop';
+  meditateInterval = setInterval(() => {
+    meditateRemaining--;
+    updateMeditateDisplay();
+    if (meditateRemaining <= 0) {
+      stopMeditate();
+      showToast('Session complete.');
+    }
+  }, 1000);
+}
+
+function stopMeditate() {
+  meditateRunning = false;
+  clearInterval(meditateInterval);
+  meditateRemaining = meditateDuration;
+  updateMeditateDisplay();
+  document.getElementById('meditate-start-btn').textContent = 'Begin';
+}
+
+document.getElementById('meditate-start-btn').addEventListener('click', startMeditate);
+
+// Ambient white noise via Web Audio API
+document.getElementById('ambient-toggle').addEventListener('click', () => {
+  if (ambientPlaying) {
+    stopAmbient();
+  } else {
+    startAmbient();
+  }
+});
+
+function startAmbient() {
+  try {
+    ambientCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const bufferSize = 2 * ambientCtx.sampleRate;
+    const buffer = ambientCtx.createBuffer(1, bufferSize, ambientCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    ambientSource = ambientCtx.createBufferSource();
+    ambientSource.buffer = buffer;
+    ambientSource.loop = true;
+
+    // Low-pass filter for soft noise
+    const filter = ambientCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+
+    const gain = ambientCtx.createGain();
+    gain.gain.value = 0.15;
+
+    ambientSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(ambientCtx.destination);
+    ambientSource.start();
+    ambientPlaying = true;
+    document.getElementById('ambient-toggle').classList.add('active');
+  } catch (e) {
+    showToast('Could not start ambient sound.');
+  }
+}
+
+function stopAmbient() {
+  if (ambientSource) { try { ambientSource.stop(); } catch {} }
+  if (ambientCtx) { try { ambientCtx.close(); } catch {} }
+  ambientSource = null;
+  ambientCtx = null;
+  ambientPlaying = false;
+  document.getElementById('ambient-toggle').classList.remove('active');
+}
+
+// ─── Sidebar: Export / Import / Config ───
+document.querySelectorAll('.sidebar a').forEach(a => {
+  const text = a.textContent.trim().toLowerCase();
+  if (text === 'export json') {
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        const entries = await api('/api/export');
+        const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const el = document.createElement('a');
+        el.href = url; el.download = `speculae-export-${isoToday()}.json`;
+        el.click(); URL.revokeObjectURL(url);
+        showToast('Exported.');
+      } catch { showToast('Export failed.'); }
+    });
+  } else if (text === 'import') {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = '.json';
+      input.addEventListener('change', async () => {
+        if (!input.files?.[0]) return;
+        try {
+          const text = await input.files[0].text();
+          const entries = JSON.parse(text);
+          const result = await api('/api/import', {
+            method: 'POST', body: text, headers: { 'Content-Type': 'application/json' }
+          });
+          showToast(`Imported ${result.imported} entries.`);
+        } catch { showToast('Import failed. Check the file format.'); }
+      });
+      input.click();
+    });
+  } else if (text === 'config') {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openSettings();
+    });
+  }
+});
+
+// ─── Settings ───
+const PROV = {
+  openai:    { base_url: '', model: 'gpt-4o-mini',        key_prefix: 'sk-' },
+  gemini:    { base_url: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-2.0-flash', key_prefix: '' },
+  anthropic: { base_url: 'https://api.anthropic.com',      model: 'claude-3-haiku-20240307', key_prefix: 'sk-ant-' },
+  custom:    { base_url: '', model: '',                    key_prefix: '' },
+};
+
+let keyVisible = false;
+
+async function openSettings() {
+  try {
+    const cfg = await api('/api/config');
+    document.getElementById('ai-enabled').checked = cfg.ai.enabled;
+    document.getElementById('ai-provider').value = cfg.ai.provider || 'openai';
+    document.getElementById('ai-base-url').value = cfg.ai.base_url || '';
+    document.getElementById('ai-model').value = cfg.ai.model || '';
+    document.getElementById('ai-api-key').value = '';
+    document.getElementById('ai-api-key').placeholder = cfg.ai.has_openai_key ? '\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7' : 'paste your key';
+    updateKeyHint();
+    onProviderChange();
+  } catch {}
+  document.getElementById('settings-overlay').classList.add('show');
+}
+
+function onProviderChange() {
+  const prov = document.getElementById('ai-provider').value;
+  const info = PROV[prov];
+  const baseUrlGroup = document.getElementById('base-url-group');
+  const baseUrl = document.getElementById('ai-base-url');
+  const model = document.getElementById('ai-model');
+
+  if (prov === 'custom') {
+    baseUrlGroup.style.display = '';
+    baseUrl.placeholder = 'https://your-endpoint.com/v1';
+  } else {
+    baseUrlGroup.style.display = 'none';
+    baseUrl.value = info.base_url;
+  }
+  if (!model.value || model.value === PROV[model.dataset.prev]?.model) {
+    model.value = info.model;
+  }
+  model.placeholder = info.model || 'model name';
+  model.dataset.prev = prov;
+  document.getElementById('ai-api-key').placeholder = info.key_prefix ? info.key_prefix + '...' : 'paste your key';
+  updateKeyHint();
+}
+
+function updateKeyHint() {
+  const prov = document.getElementById('ai-provider').value;
+  const key = document.getElementById('ai-api-key').value.trim();
+  const hint = document.getElementById('key-hint');
+  if (!key) { hint.textContent = ''; return; }
+  const info = PROV[prov];
+  if (info.key_prefix && !key.startsWith(info.key_prefix)) {
+    hint.textContent = `key should start with "${info.key_prefix}"`;
+    hint.style.color = 'var(--oxblood-soft)';
+  } else {
+    hint.textContent = 'key format looks valid';
+    hint.style.color = 'var(--moss)';
+  }
+}
+
+document.getElementById('ai-provider')?.addEventListener('change', onProviderChange);
+document.getElementById('ai-api-key')?.addEventListener('input', updateKeyHint);
+
+document.getElementById('eye-toggle')?.addEventListener('click', () => {
+  const input = document.getElementById('ai-api-key');
+  keyVisible = !keyVisible;
+  input.type = keyVisible ? 'text' : 'password';
+});
+
+document.getElementById('settings-save')?.addEventListener('click', async () => {
+  const prov = document.getElementById('ai-provider').value;
+  const info = PROV[prov];
+  const key = document.getElementById('ai-api-key').value.trim();
+
+  if (!document.getElementById('ai-enabled').checked) {
+    const data = { ai: { enabled: false } };
+    await api('/api/config', { method: 'PUT', body: JSON.stringify(data) });
+    document.getElementById('settings-overlay').classList.remove('show');
+    showToast('Settings saved.');
+    return;
+  }
+
+  if (!key) {
+    showToast('Enter an API key.');
+    return;
+  }
+
+  if (info.key_prefix && !key.startsWith(info.key_prefix)) {
+    showToast(`Key should start with "${info.key_prefix}"`);
+    return;
+  }
+
+  const data = {
+    ai: {
+      enabled: true,
+      provider: prov,
+      model: document.getElementById('ai-model').value.trim() || info.model,
+      base_url: prov === 'custom' ? document.getElementById('ai-base-url').value.trim() : info.base_url,
+      openai_api_key: key,
+    }
+  };
+
+  try {
+    await api('/api/config', { method: 'PUT', body: JSON.stringify(data) });
+    document.getElementById('settings-overlay').classList.remove('show');
+    showToast('Settings saved.');
+  } catch { showToast('Failed to save settings.'); }
+});
+
+document.getElementById('settings-close')?.addEventListener('click', () => {
+  document.getElementById('settings-overlay').classList.remove('show');
+});
+
+document.getElementById('settings-overlay')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+// ─── Toast ───
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+  el.querySelectorAll('[data-view]').forEach(a => {
+    a.addEventListener('click', () => {
+      el.classList.remove('show');
+      document.querySelector(`.nav-item[data-view="${a.dataset.view}"]`)?.click();
+    });
+  });
+}
+
+document.getElementById('toast-close').addEventListener('click', () => {
+  const el = document.getElementById('toast');
+  el.classList.remove('show');
+  clearTimeout(toastTimer);
+});
+
+// ─── Init ───
+updateWriteDateLabel();
+loadWriteEntry();
+loadAgents();
+loadDashboard();
+
+// ─── Dashboard ───
+function moodLabel(val) {
+  const labels = { 1: 'low', 2: 'low-mid', 3: 'neutral', 4: 'good', 5: 'great' };
+  return labels[val] || '—';
+}
+function moodColor(val) {
+  const colors = { 1: 'var(--oxblood)', 2: 'var(--oxblood-soft)', 3: 'var(--ink-muted)', 4: 'var(--ochre)', 5: 'var(--moss)' };
+  return colors[val] || 'var(--rule)';
+}
+
+async function loadDashboard() {
+  const today = isoToday();
+  loadDashboardMood(today);
+  loadDashboardStreak();
+  loadDashboardWords();
+  loadDashboardQuote();
+}
+
+async function loadDashboardMood(today) {
+  const valEl = document.getElementById('widget-mood-value');
+  const descEl = document.getElementById('widget-mood-desc');
+  try {
+    const entries = await api(`/api/entries/${today}`);
+    if (Array.isArray(entries) && entries.length > 0) {
+      const latest = entries[entries.length - 1];
+      if (latest.mood) {
+        valEl.textContent = latest.mood;
+        valEl.innerHTML = `${latest.mood}<span class="widget-mood-dot" style="background:${moodColor(latest.mood)}"></span>`;
+        descEl.textContent = moodLabel(latest.mood);
+        return;
+      }
+    }
+    valEl.textContent = '—';
+    descEl.textContent = 'No mood yet — write an entry to set it';
+  } catch {
+    valEl.textContent = '—';
+    descEl.textContent = 'Could not load';
+  }
+}
+
+async function loadDashboardStreak() {
+  const valEl = document.getElementById('widget-streak-value');
+  const descEl = document.getElementById('widget-streak-desc');
+  try {
+    const cal = await api('/api/calendar?months=6');
+    const today = new Date();
+    let streak = 0;
+    let maxStreak = 0;
+    let tempStreak = 0;
+    const d = new Date(today);
+    for (let i = 0; i < 180; i++) {
+      const key = fmtDate(d);
+      if (cal[key]?.has_content) {
+        if (i === 0 || tempStreak > 0) tempStreak++;
+        else tempStreak = 1;
+        maxStreak = Math.max(maxStreak, tempStreak);
+      } else {
+        if (i === 0) { tempStreak = 0; }
+        else { tempStreak = 0; }
+      }
+      d.setDate(d.getDate() - 1);
+    }
+    // Recalculate current streak properly: count consecutive days from today backwards
+    let currentStreak = 0;
+    const d2 = new Date(today);
+    for (let i = 0; i < 365; i++) {
+      if (cal[fmtDate(d2)]?.has_content) {
+        currentStreak++;
+      } else {
+        break;
+      }
+      d2.setDate(d2.getDate() - 1);
+    }
+    // Recalculate longest streak
+    let longest = 0;
+    let run = 0;
+    const d3 = new Date(today);
+    for (let i = 0; i < 365; i++) {
+      if (cal[fmtDate(d3)]?.has_content) {
+        run++;
+        longest = Math.max(longest, run);
+      } else {
+        run = 0;
+      }
+      d3.setDate(d3.getDate() - 1);
+    }
+
+    valEl.textContent = currentStreak > 0 ? `${currentStreak} day${currentStreak !== 1 ? 's' : ''}` : '0 days';
+    descEl.textContent = longest > 0 ? `longest: ${longest} day${longest !== 1 ? 's' : ''}` : 'start writing to build a streak';
+  } catch {
+    valEl.textContent = '—';
+    descEl.textContent = 'Could not load';
+  }
+}
+
+async function loadDashboardWords() {
+  const valEl = document.getElementById('widget-words-value');
+  const descEl = document.getElementById('widget-words-desc');
+  try {
+    const entries = await api('/api/entries?days=7');
+    if (Array.isArray(entries)) {
+      const totalWords = entries.reduce((sum, e) => {
+        const words = e.content ? e.content.trim().split(/\s+/).length : 0;
+        return sum + words;
+      }, 0);
+      valEl.textContent = totalWords.toLocaleString();
+      descEl.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} this week`;
+    } else {
+      valEl.textContent = '0';
+      descEl.textContent = 'No entries this week';
+    }
+  } catch {
+    valEl.textContent = '—';
+    descEl.textContent = 'Could not load';
+  }
+}
+
+async function loadDashboardQuote() {
+  const textEl = document.getElementById('widget-quote-text');
+  const catEl = document.getElementById('widget-quote-category');
+  try {
+    const data = await api('/api/wellness/prompt/daily');
+    if (data) {
+      textEl.textContent = data.prompt || data.text || data;
+      catEl.textContent = data.category || '';
+    } else {
+      textEl.textContent = 'What small thing caught your attention today?';
+      catEl.textContent = '';
+    }
+  } catch {
+    textEl.textContent = 'What small thing caught your attention today?';
+    catEl.textContent = '';
+  }
+}
+
+document.getElementById('widget-quote-refresh')?.addEventListener('click', async () => {
+  const textEl = document.getElementById('widget-quote-text');
+  const catEl = document.getElementById('widget-quote-category');
+  try {
+    const data = await api('/api/wellness/prompt');
+    if (data) {
+      textEl.textContent = data.prompt || data.text || data;
+      catEl.textContent = data.category || '';
+    }
+  } catch {
+    // keep current quote
+  }
+});
+
+// Quick action buttons
+document.querySelectorAll('.widget-action-btn[data-nav]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.getAttribute('data-nav');
+    document.querySelector(`.nav-item[data-view="${target}"]`)?.click();
+  });
+});
+
+// Auto-save before leaving write view
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (item.getAttribute('data-view') !== 'write') autoSave();
+  });
+});
+
+// ─── Theme Toggle ───
+const html = document.documentElement;
+const savedTheme = localStorage.getItem('speculae-theme') || 'light';
+html.setAttribute('data-theme', savedTheme);
+updateThemeUI(savedTheme);
+
+document.getElementById('theme-toggle')?.addEventListener('click', () => {
+  const current = html.getAttribute('data-theme') || 'light';
+  // Cycle: light → dark → aqua → high-contrast → light
+  const cycle = { 'light': 'dark', 'dark': 'aqua', 'aqua': 'high-contrast', 'high-contrast': 'light' };
+  const next = cycle[current] || 'light';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('speculae-theme', next);
+  updateThemeUI(next);
+});
+
+function updateThemeUI(theme) {
+  const icon = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  const btn = document.getElementById('theme-toggle');
+  if (theme === 'dark') {
+    if (icon) icon.textContent = '\u263e';
+    if (label) label.textContent = 'dark';
+    if (btn) btn.setAttribute('aria-label', 'Switch to aqua theme');
+  } else if (theme === 'aqua') {
+    if (icon) icon.textContent = '\u2726';
+    if (label) label.textContent = 'aqua';
+    if (btn) btn.setAttribute('aria-label', 'Switch to high contrast theme');
+  } else if (theme === 'high-contrast') {
+    if (icon) icon.textContent = '\u25d0';
+    if (label) label.textContent = 'hi-con';
+    if (btn) btn.setAttribute('aria-label', 'Switch to light theme');
+  } else {
+    if (icon) icon.textContent = '\u2600';
+    if (label) label.textContent = 'light';
+    if (btn) btn.setAttribute('aria-label', 'Switch to dark theme');
+  }
+}
+
+// ─── Fullscreen Toggle ───
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+}
+
+document.getElementById('fullscreen-toggle')?.addEventListener('click', toggleFullscreen);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'F11') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+document.addEventListener('fullscreenchange', () => {
+  const isFull = !!document.fullscreenElement;
+  const icon = document.getElementById('fullscreen-icon');
+  const label = document.getElementById('fullscreen-label');
+  if (icon) icon.textContent = isFull ? '\u25d0' : '\u26f6';
+  if (label) label.textContent = isFull ? 'exit' : 'full';
+});
+
+// ─── Keyboard navigation for nav items ───
+// Nav items are divs with role="button" and tabindex="0"
+// They need Enter and Space to activate, same as real buttons.
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      item.click();
+    }
+  });
+});
+
+// Update aria-current and aria-pressed on nav items when view changes
+function updateNavAria(targetView) {
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const isActive = n.getAttribute('data-view') === targetView;
+    n.setAttribute('aria-current', isActive ? 'page' : 'false');
+  });
+}
+
+// Patch the existing navItems click handler to also call updateNavAria
+// We do this by observing the active class on views.
+const _origNavHandler = navItems;
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const target = item.getAttribute('data-view');
+    if (target) updateNavAria(target);
+  });
+});
+
+// ─── ARIA state sync helpers ───
+
+// Sync aria-pressed on mode-toggle buttons in markdown toolbar
+function syncEditorModeAria(mode) {
+  document.querySelectorAll('#md-toolbar .mode-toggle button').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+  });
+}
+
+// Patch setEditorMode to also update aria
+const _origSetEditorMode = setEditorMode;
+// Override setEditorMode inline below — we need to patch after definition.
+// We'll wrap it instead:
+const _setEditorModeBase = setEditorMode;
+window._setEditorModePatchApplied = true;
+
+// Patch: call syncEditorModeAria whenever toolbar mode changes
+document.querySelectorAll('#md-toolbar .mode-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    syncEditorModeAria(b.dataset.mode);
+  });
+});
+
+// Sync aria-pressed on exercise picker buttons
+function syncExerciseAria(ex) {
+  document.querySelectorAll('[data-exercise]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.exercise === ex));
+  });
+}
+document.querySelectorAll('[data-exercise]').forEach(b => {
+  b.addEventListener('click', () => syncExerciseAria(b.dataset.exercise));
+});
+
+// Sync aria-pressed on duration picker buttons
+function syncDurationAria(minutes) {
+  document.querySelectorAll('#duration-picker .duration-btn').forEach(b => {
+    b.setAttribute('aria-pressed', String(parseInt(b.dataset.minutes) === minutes));
+  });
+}
+document.querySelectorAll('#duration-picker .duration-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (!meditateRunning) syncDurationAria(parseInt(b.dataset.minutes));
+  });
+});
+
+// Sync aria-pressed on star button
+function syncStarAria(starred) {
+  const btn = document.getElementById('star-btn');
+  if (btn) btn.setAttribute('aria-pressed', String(starred));
+}
+
+// Sync aria-pressed on focus toggle
+function syncFocusAria(active) {
+  const btn = document.getElementById('focus-toggle');
+  if (btn) btn.setAttribute('aria-pressed', String(active));
+}
+
+// Sync aria-pressed on ambient toggle
+function syncAmbientAria(active) {
+  const btn = document.getElementById('ambient-toggle');
+  if (btn) btn.setAttribute('aria-pressed', String(active));
+}
+
+// Sync aria-checked on mood/energy selector dots
+function syncSelectorAria(selectorId, value, type) {
+  document.querySelectorAll(`#${selectorId} .selector-dot`).forEach(d => {
+    const val = parseInt(d.getAttribute('data-val'));
+    d.setAttribute('aria-checked', String(value !== null && val <= value));
+  });
+}
+
+// Patch updateMoodDots / updateEnergyDots to also update ARIA
+const _origUpdateMoodDots = updateMoodDots;
+const _origUpdateEnergyDots = updateEnergyDots;
+
+// We can't easily reassign declared functions in non-strict mode,
+// so we listen to the selector clicks and also sync ARIA there.
+document.querySelectorAll('#mood-selector .selector-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    // currentMood is set before this fires due to event order,
+    // but we sync after a microtask to catch the updated value.
+    queueMicrotask(() => syncSelectorAria('mood-selector', currentMood, 'mood'));
+  });
+  // Keyboard activation for radio-like dots
+  dot.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      dot.click();
+    }
+    // Arrow key navigation within the group
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const dots = [...document.querySelectorAll('#mood-selector .selector-dot')];
+      const idx = dots.indexOf(dot);
+      if (idx < dots.length - 1) dots[idx + 1].focus();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const dots = [...document.querySelectorAll('#mood-selector .selector-dot')];
+      const idx = dots.indexOf(dot);
+      if (idx > 0) dots[idx - 1].focus();
+    }
+  });
+});
+
+document.querySelectorAll('#energy-selector .selector-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    queueMicrotask(() => syncSelectorAria('energy-selector', currentEnergy, 'energy'));
+  });
+  dot.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      dot.click();
+    }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const dots = [...document.querySelectorAll('#energy-selector .selector-dot')];
+      const idx = dots.indexOf(dot);
+      if (idx < dots.length - 1) dots[idx + 1].focus();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const dots = [...document.querySelectorAll('#energy-selector .selector-dot')];
+      const idx = dots.indexOf(dot);
+      if (idx > 0) dots[idx - 1].focus();
+    }
+  });
+});
+
+// Keyboard activation for filter-starred-chip (role="button")
+document.getElementById('filter-starred-chip')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    document.getElementById('filter-starred-chip').click();
+  }
+});
+// Sync its aria-pressed when clicked
+document.getElementById('filter-starred-chip')?.addEventListener('click', () => {
+  queueMicrotask(() => {
+    const chip = document.getElementById('filter-starred-chip');
+    if (chip) chip.setAttribute('aria-pressed', String(filterStarred));
+  });
+});
+
+// Sync focus-toggle aria-pressed
+document.getElementById('focus-toggle')?.addEventListener('click', () => {
+  queueMicrotask(() => syncFocusAria(focusMode));
+});
+
+// Sync star button aria-pressed
+document.getElementById('star-btn')?.addEventListener('click', () => {
+  queueMicrotask(() => syncStarAria(currentStarred));
+});
+
+// Sync ambient aria-pressed
+document.getElementById('ambient-toggle')?.addEventListener('click', () => {
+  queueMicrotask(() => syncAmbientAria(ambientPlaying));
+});
+
+// ─── Screen reader announcements for breathing ───
+// Patch runBreathePhase to also announce phase to SR users
+const _origRunBreathePhase = runBreathePhase;
+// We inject the SR update by adding a listener on breathe-start-btn's
+// phase changes via a MutationObserver on the breathe-label element.
+const breatheLabelEl = document.getElementById('breathe-label');
+if (breatheLabelEl) {
+  const breatheObs = new MutationObserver(() => {
+    const srEl = document.getElementById('breathe-sr-status');
+    if (srEl && breatheLabelEl.textContent !== 'Ready') {
+      srEl.textContent = breatheLabelEl.textContent;
+    }
+  });
+  breatheObs.observe(breatheLabelEl, { childList: true, characterData: true, subtree: true });
+}
+
+// ─── Screen reader announcement for meditation timer (every minute) ───
+// Patch the meditate interval to announce remaining time at minute boundaries.
+// We do this by wrapping the existing meditateInterval setup.
+// Since meditateInterval is set inside startMeditate, we use a MutationObserver
+// on meditate-time instead.
+const meditateLabelEl = document.getElementById('meditate-time');
+if (meditateLabelEl) {
+  let lastAnnounced = '';
+  const meditateObs = new MutationObserver(() => {
+    const text = meditateLabelEl.textContent || '';
+    // Announce at each whole minute (when seconds === 00)
+    if (text.endsWith(':00') && text !== lastAnnounced) {
+      lastAnnounced = text;
+      const srEl = document.getElementById('meditate-sr-status');
+      if (srEl) srEl.textContent = `${text} remaining`;
+    }
+  });
+  meditateObs.observe(meditateLabelEl, { childList: true, characterData: true, subtree: true });
+}
+
+// ─── Font Size Scaling ───
+const FONT_SCALES = [80, 90, 100, 110, 120, 130, 150];
+let fontScaleIdx = FONT_SCALES.indexOf(100); // default: 100%
+
+function applyFontScale(idx) {
+  fontScaleIdx = Math.max(0, Math.min(FONT_SCALES.length - 1, idx));
+  const pct = FONT_SCALES[fontScaleIdx];
+  // Scale the base font size on <html> so all rem-based sizes scale together
+  document.documentElement.style.fontSize = (16 * pct / 100) + 'px';
+  localStorage.setItem('speculae-font-scale', (16 * pct / 100));
+  const display = document.getElementById('font-scale-display');
+  if (display) display.textContent = pct + '%';
+  // Update button disabled state
+  const downBtn = document.getElementById('font-scale-down');
+  const upBtn = document.getElementById('font-scale-up');
+  if (downBtn) downBtn.disabled = fontScaleIdx === 0;
+  if (upBtn) upBtn.disabled = fontScaleIdx === FONT_SCALES.length - 1;
+}
+
+// Restore saved font scale
+(function restoreFontScale() {
+  const saved = localStorage.getItem('speculae-font-scale');
+  if (saved) {
+    const px = parseFloat(saved);
+    const pct = Math.round(px / 16 * 100);
+    const idx = FONT_SCALES.indexOf(pct);
+    if (idx !== -1) {
+      fontScaleIdx = idx;
+      document.documentElement.style.fontSize = px + 'px';
+      const display = document.getElementById('font-scale-display');
+      if (display) display.textContent = pct + '%';
+    }
+  }
+})();
+
+document.getElementById('font-scale-down')?.addEventListener('click', () => applyFontScale(fontScaleIdx - 1));
+document.getElementById('font-scale-up')?.addEventListener('click', () => applyFontScale(fontScaleIdx + 1));
+document.getElementById('font-scale-reset')?.addEventListener('click', () => {
+  localStorage.removeItem('speculae-font-scale');
+  document.documentElement.style.fontSize = '';
+  fontScaleIdx = FONT_SCALES.indexOf(100);
+  const display = document.getElementById('font-scale-display');
+  if (display) display.textContent = '100%';
+  const downBtn = document.getElementById('font-scale-down');
+  const upBtn = document.getElementById('font-scale-up');
+  if (downBtn) downBtn.disabled = false;
+  if (upBtn) upBtn.disabled = false;
+});
+
+// ─── Dialog focus trap (Settings overlay) ───
+// When the settings dialog opens, trap Tab/Shift+Tab inside it.
+// When it closes, return focus to the element that opened it.
+let settingsOpener = null;
+
+const settingsOverlay = document.getElementById('settings-overlay');
+const focusableSelectors = 'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])';
+
+function getFocusable(container) {
+  return [...container.querySelectorAll(focusableSelectors)].filter(
+    el => !el.disabled && el.offsetParent !== null
+  );
+}
+
+// Patch openSettings to record the opener and focus the first field
+const _origOpenSettings = openSettings;
+// We wrap by re-assigning (works because openSettings is a function declaration
+// that was hoisted; we can shadow it in this scope if we use a variable —
+// but since it's declared as async function, we intercept via the button click instead)
+document.getElementById('settings-overlay')?.addEventListener('keydown', (e) => {
+  if (!settingsOverlay.classList.contains('show')) return;
+  const focusable = getFocusable(settingsOverlay);
+  if (!focusable.length) return;
+  if (e.key === 'Tab') {
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+  if (e.key === 'Escape') {
+    settingsOverlay.classList.remove('show');
+    if (settingsOpener) { settingsOpener.focus(); settingsOpener = null; }
+  }
+});
+
+// Record opener when Config link is clicked
+document.querySelectorAll('.sidebar a').forEach(a => {
+  if (a.textContent.trim().toLowerCase() === 'config') {
+    a.addEventListener('click', () => {
+      settingsOpener = a;
+      // Focus first focusable in overlay after it opens
+      requestAnimationFrame(() => {
+        const focusable = getFocusable(settingsOverlay);
+        if (focusable.length) focusable[0].focus();
+      });
+    });
+  }
+});
+
+document.getElementById('settings-close')?.addEventListener('click', () => {
+  if (settingsOpener) { settingsOpener.focus(); settingsOpener = null; }
+});
+
+// ─────────────────────────────────────────────────────
+// ✦  SPECULAE v0.3.0 — NAME · WHISPER · LENS · STARS
+// ─────────────────────────────────────────────────────
+
+const WHISPER_PROMPTS = [
+  'what are you carrying today?',
+  'where did your attention go yesterday?',
+  'what would feel like enough, right now?',
+  'what do you want to remember about this moment?',
+  'what are you moving toward?',
+  'what did you notice that you almost didn\u2019t notice?',
+  'what does your body know that your mind hasn\u2019t caught up to yet?',
+  'what are you grateful for that you haven\u2019t said out loud?',
+  'what would you tell yourself from a week ago?',
+  'what are you afraid to write?',
+  'what conversation is still unfinished in you?',
+  'what does quiet feel like today?',
+  'what arrived today that you didn\u2019t plan for?',
+  'what do you want to let go of?',
+  'what mattered most this week?',
+  'what is underneath the surface right now?',
+  'what do you know now that you didn\u2019t know this morning?',
+  'what do you want more of?',
+  'what are you learning about how you work?',
+  'what would be true if everything went right?',
+  'what is the kindest thing you could say to yourself today?',
+  'what is the most honest thing you could write right now?',
+  'what do you keep coming back to?',
+  'what do you want to hold onto from today?',
+  'what made you feel most like yourself recently?',
+  'what are you in the middle of?',
+  'what deserves more of your attention?',
+  'what would it mean to fully show up today?',
+  'what is changing that you can feel but haven\u2019t named?',
+  'what surprised you?',
+  'what do you want the next version of yourself to know?'
+];
+
+// ─── Owner Name ───
+function getOwnerName() {
+  return localStorage.getItem('speculae.ownerName') || 'Human';
+}
+
+function applyOwnerName(name) {
+  const humanOpt = document.getElementById('human-option');
+  if (humanOpt) humanOpt.textContent = name;
+  updateWriteContextLabel();
+}
+
+function updateWriteContextLabel() {
+  const label = document.getElementById('write-context-label');
+  if (!label) return;
+  const sel = document.getElementById('agent-select');
+  const val = sel?.value || 'human';
+  if (val === 'human') {
+    const name = getOwnerName();
+    label.textContent = name !== 'Human' ? name + '\u2019s journal' : '';
+  } else {
+    const agentName = sel?.options[sel?.selectedIndex]?.textContent || val;
+    label.textContent = agentName + '\u2019s journal';
+  }
+}
+
+function initOwnerName() {
+  const name = localStorage.getItem('speculae.ownerName');
+  const overlay = document.getElementById('onboarding-overlay');
+  if (!name) {
+    overlay?.classList.add('active');
+    setTimeout(() => document.getElementById('onboarding-name-input')?.focus(), 400);
+  } else {
+    applyOwnerName(name);
+  }
+}
+
+document.getElementById('onboarding-begin-btn')?.addEventListener('click', () => {
+  const input = document.getElementById('onboarding-name-input');
+  const name = (input?.value || '').trim() || 'Human';
+  localStorage.setItem('speculae.ownerName', name);
+  const overlay = document.getElementById('onboarding-overlay');
+  overlay?.classList.add('fading');
+  setTimeout(() => { overlay?.classList.remove('active', 'fading'); applyOwnerName(name); }, 650);
+});
+
+document.getElementById('onboarding-name-input')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('onboarding-begin-btn')?.click();
+});
+
+initOwnerName();
+
+// ─── First-Light Whisper ───
+function showWhisper() {
+  const whisper = document.getElementById('write-whisper');
+  if (!whisper) return;
+  const today = isoToday();
+  const lastDate = localStorage.getItem('speculae.lastWhisperDate');
+  if (lastDate === today) { whisper.classList.add('hidden'); return; }
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  const prompt = WHISPER_PROMPTS[dayOfYear % WHISPER_PROMPTS.length];
+  whisper.textContent = prompt;
+  whisper.classList.remove('hidden', 'faded');
+  const ta = document.getElementById('entry-text');
+  const fadeOnType = () => {
+    whisper.classList.add('faded');
+    localStorage.setItem('speculae.lastWhisperDate', today);
+    ta?.removeEventListener('keydown', fadeOnType);
+  };
+  ta?.addEventListener('keydown', fadeOnType);
+}
+
+// ─── Agent Lens Mode ───
+function applyLensMode(agentId) {
+  updateWriteContextLabel();
+}
+
+// ─── Constellation View ───
+const CONSTELLATION_COLORS = [
+  '#b8884a', // ochre — human
+  '#c47878', // dusty rose — agent 1
+  '#7898c4', // slate — agent 2
+  '#88b870', // sage — agent 3
+  '#c4a870', // amber
+  '#9470c4', // lavender
+  '#70c4b0', // teal
+  '#c47090', // blush
+];
+
+let constellationCleanup = null;
+
+async function renderConstellation() {
+  if (constellationCleanup) { constellationCleanup(); constellationCleanup = null; }
+  const canvas = document.getElementById('constellation-canvas');
+  const tooltip = document.getElementById('constellation-tooltip');
+  const legendEl = document.getElementById('constellation-legend');
+  const emptyEl = document.getElementById('constellation-empty');
+  const rangeEl = document.getElementById('constellation-range');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let allEntries = [];
+  try { allEntries = await api('/api/entries?limit=500&offset=0') || []; } catch(e) { allEntries = []; }
+  // flatten: some endpoints return array, some return {entries:[]}
+  if (allEntries && allEntries.entries) allEntries = allEntries.entries;
+  if (!Array.isArray(allEntries)) allEntries = [];
+
+  if (allEntries.length === 0) {
+    canvas.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
+  }
+  canvas.style.display = 'block';
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  const contexts = [...new Set(allEntries.map(e => e.agent_id || 'human'))];
+  const colorMap = {};
+  colorMap['human'] = CONSTELLATION_COLORS[0];
+  let ci = 1;
+  contexts.filter(c => c !== 'human').forEach(c => { colorMap[c] = CONSTELLATION_COLORS[ci % CONSTELLATION_COLORS.length]; ci++; });
+
+  // Legend
+  legendEl.innerHTML = '';
+  contexts.forEach(cid => {
+    const name = cid === 'human' ? getOwnerName() : ((agents || []).find(a => a.id === cid)?.name || cid);
+    const item = document.createElement('div');
+    item.className = 'constellation-legend-item';
+    item.innerHTML = `<div class="constellation-dot-icon" style="background:${colorMap[cid]};box-shadow:0 0 6px ${colorMap[cid]}66"></div><span>${name}</span>`;
+    legendEl.appendChild(item);
+  });
+
+  const dates = allEntries.map(e => new Date(e.created_at || e.date + 'T12:00:00')).filter(d => !isNaN(d.getTime()));
+  const minDate = new Date(Math.min(...dates));
+  const maxDate = new Date(Math.max(...dates));
+  if (rangeEl) {
+    const fmt = d => d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    rangeEl.textContent = dates.length > 1 ? fmt(minDate) + ' \u2014 ' + fmt(maxDate) : fmt(minDate);
+  }
+
+  let stars = [];
+
+  function draw() {
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    canvas.width = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    ctx.clearRect(0, 0, W, H);
+
+    const PAD_X = 64, PAD_Y = 48;
+    const IW = W - PAD_X * 2;
+    const IH = H - PAD_Y * 2;
+    const timeRange = (maxDate - minDate) || 1;
+
+    // Grid
+    ctx.lineWidth = 0.5;
+    for (let m = 1; m <= 5; m++) {
+      const gy = PAD_Y + IH - ((m - 1) / 4) * IH;
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.beginPath(); ctx.moveTo(PAD_X, gy); ctx.lineTo(W - PAD_X, gy); ctx.stroke();
+      ctx.fillStyle = 'rgba(184,136,74,0.25)';
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(m, PAD_X - 8, gy + 3);
+    }
+    ctx.textAlign = 'left';
+
+    // Build stars
+    stars = [];
+    allEntries.forEach(e => {
+      const d = new Date(e.created_at || e.date + 'T12:00:00');
+      if (isNaN(d.getTime())) return;
+      const mood = Math.max(1, Math.min(5, e.mood || 3));
+      const energy = Math.max(1, Math.min(5, e.energy || 3));
+      const t = (d - minDate) / timeRange;
+      const sx = PAD_X + t * IW;
+      const sy = PAD_Y + IH - ((mood - 1) / 4) * IH;
+      const r = 2.5 + (energy / 5) * 5.5;
+      const color = colorMap[e.agent_id || 'human'] || CONSTELLATION_COLORS[0];
+
+      // Glow
+      const grd = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 3.5);
+      grd.addColorStop(0, color + 'cc');
+      grd.addColorStop(0.4, color + '44');
+      grd.addColorStop(1, color + '00');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(sx, sy, r * 3.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = color; ctx.fill();
+
+      stars.push({ sx, sy, hitR: r * 3.5, entry: e, color });
+    });
+
+    // Connector lines per context
+    contexts.forEach(cid => {
+      const sorted = [...allEntries]
+        .filter(e => (e.agent_id || 'human') === cid)
+        .sort((a, b) => new Date(a.created_at || a.date) - new Date(b.created_at || b.date));
+      if (sorted.length < 2) return;
+      ctx.strokeStyle = colorMap[cid] + '1a';
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      let first = true;
+      sorted.forEach(e => {
+        const s = stars.find(st => st.entry === e);
+        if (!s) return;
+        if (first) { ctx.moveTo(s.sx, s.sy); first = false; } else ctx.lineTo(s.sx, s.sy);
+      });
+      ctx.stroke();
+    });
+  }
+
+  draw();
+
+  const onResize = () => draw();
+  window.addEventListener('resize', onResize);
+
+  const onMove = (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+    let hit = null;
+    for (const s of stars) { if (Math.hypot(mx - s.sx, my - s.sy) <= s.hitR) { hit = s; break; } }
+    if (hit) {
+      const e = hit.entry;
+      const t = e.created_at ? new Date(e.created_at) : null;
+      const ts = t ? `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} \u00b7 ${t.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}` : (e.date || '');
+      const snippet = (e.content || '').replace(/[#*_`]/g,'').slice(0, 90);
+      tooltip.innerHTML = `<div style="color:${hit.color};font-size:9px;margin-bottom:5px;letter-spacing:0.06em">${ts}</div>${snippet}${snippet.length < (e.content||'').length ? '\u2026' : ''}`;
+      tooltip.style.left = (ev.clientX + 16) + 'px';
+      tooltip.style.top = (ev.clientY - 12) + 'px';
+      tooltip.classList.add('visible');
+      canvas.style.cursor = 'pointer';
+    } else {
+      tooltip.classList.remove('visible');
+      canvas.style.cursor = 'crosshair';
+    }
+  };
+  const onLeave = () => tooltip.classList.remove('visible');
+  const onClick = (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+    for (const s of stars) {
+      if (Math.hypot(mx - s.sx, my - s.sy) <= s.hitR) {
+        document.querySelector('.nav-item[data-view="read"]')?.click();
+        break;
+      }
+    }
+  };
+
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseleave', onLeave);
+  canvas.addEventListener('click', onClick);
+
+  constellationCleanup = () => {
+    window.removeEventListener('resize', onResize);
+    canvas.removeEventListener('mousemove', onMove);
+    canvas.removeEventListener('mouseleave', onLeave);
+    canvas.removeEventListener('click', onClick);
+  };
+}
+</script>
+
+</body>
+</html>
